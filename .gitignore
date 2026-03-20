@@ -1,4 +1,22 @@
-dist/
+# Dependencies
 node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Environment variables — nunca commitar
 .env
-coverage/
+*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
