@@ -21,7 +21,7 @@ export class CreateUsersTable1742000000001 implements MigrationInterface {
       (
         'Admin Seed',
         'admin@fintech.com',
-        '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'
+        '$2b$10$IY5ci.zY/chVpCKU3dh7E.AO.1Qhiy9OJfDPWeF48hDQPsR72lZmq'
       )
     `);
   }

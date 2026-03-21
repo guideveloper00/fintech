@@ -17,8 +17,14 @@ export const api = axios.create({
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError<ApiErrorResponse>) => {
-    if (error.response?.status === 401) {
-      // Limpa o estado local — o cookie já foi rejeitado pelo backend
+    const requestUrl = error.config?.url ?? '';
+    const isAuthEndpoint =
+      requestUrl.includes('/auth/login') ||
+      requestUrl.includes('/auth/register');
+
+    // Só redireciona para /login se o 401 vier de uma rota protegida,
+    // não de uma tentativa de login com credenciais erradas.
+    if (error.response?.status === 401 && !isAuthEndpoint) {
       useAuthStore.getState().logout();
       window.location.href = '/login';
     }

@@ -1,13 +1,25 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Box, CircularProgress } from '@mui/material';
 import { useAuthStore } from '@/store/auth.store';
+import LoginPage from '@/pages/login';
+import RegisterPage from '@/pages/register';
+import DashboardPage from '@/pages/dashboard';
+import TransactionsPage from '@/pages/transactions';
+import CategoriesPage from '@/pages/categories';
+import AppLayout from '@/components/AppLayout';
 
 function PrivateRoute({ children }: { children: React.ReactNode }): JSX.Element {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const isHydrated = useAuthStore((s) => s.isHydrated);
 
   // Aguarda o Zustand reidratar do localStorage antes de redirecionar
-  if (!isHydrated) return <></>;
-
+  if (!isHydrated) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
 }
 
@@ -16,34 +28,21 @@ export default function App(): JSX.Element {
     <BrowserRouter>
       <Routes>
         {/* Rotas públicas */}
-        <Route path="/login" element={<div>Login</div>} />
-        <Route path="/register" element={<div>Register</div>} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
 
-        {/* Rotas protegidas */}
+        {/* Rotas protegidas — todas dentro do layout */}
         <Route
-          path="/"
           element={
             <PrivateRoute>
-              <div>Dashboard</div>
+              <AppLayout />
             </PrivateRoute>
           }
-        />
-        <Route
-          path="/transactions"
-          element={
-            <PrivateRoute>
-              <div>Transações</div>
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/categories"
-          element={
-            <PrivateRoute>
-              <div>Categorias</div>
-            </PrivateRoute>
-          }
-        />
+        >
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/transactions" element={<TransactionsPage />} />
+          <Route path="/categories" element={<CategoriesPage />} />
+        </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

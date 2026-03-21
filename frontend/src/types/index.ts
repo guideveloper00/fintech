@@ -42,10 +42,8 @@ export interface User {
   updatedAt: string;
 }
 
-export interface AuthResult {
-  access_token: string;
-  user: User;
-}
+/** Shape retornado pelos endpoints de auth — o token fica no HttpOnly cookie */
+export type AuthResult = User;
 
 // ---------------------------------------------------------------------------
 // Categorias
@@ -55,15 +53,11 @@ export interface Category {
   id: string;
   name: string;
   description: string | null;
-  userId: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export type CreateCategoryPayload = {
-  name: string;
-  description?: string;
-};
+export type CreateCategoryPayload = { name: string; description?: string };
 
 export type UpdateCategoryPayload = Partial<CreateCategoryPayload>;
 
@@ -79,8 +73,8 @@ export interface Transaction {
   amount: number;
   type: TransactionType;
   date: string;
-  categoryId: string;
-  category: Pick<Category, 'id' | 'name'>;
+  categoryId: string | null;
+  category: Pick<Category, 'id' | 'name'> | null;
   userId: string;
   createdAt: string;
   updatedAt: string;
@@ -91,7 +85,7 @@ export type CreateTransactionPayload = {
   amount: number;
   type: TransactionType;
   date: string;
-  categoryId: string;
+  categoryId?: string;
 };
 
 export type UpdateTransactionPayload = Partial<CreateTransactionPayload>;
@@ -120,4 +114,10 @@ export interface DashboardData {
   totalIncome: number;
   totalExpense: number;
   topExpenseCategories: TopCategory[];
+  period: { startDate: string | null; endDate: string | null };
+}
+
+export interface DashboardQueryParams {
+  startDate?: string;
+  endDate?: string;
 }

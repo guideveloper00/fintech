@@ -12,8 +12,8 @@ async function bootstrap(): Promise<void> {
   const config = app.get(ConfigService);
   const logger = new Logger('Bootstrap');
 
-  const port = config.getOrThrow<number>('PORT') ?? 3000;
-  const frontendUrl = config.getOrThrow<string>('FRONTEND_URL') ?? '*';
+  const port = config.get<number>('PORT', 3000);
+  const frontendUrl = config.get<string>('FRONTEND_URL', 'http://localhost:5173');
 
   app.use(cookieParser());
 
