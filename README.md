@@ -69,6 +69,75 @@ docker compose down -v
 
 ---
 
+## Deploy — Vercel (Produção)
+
+A aplicação é composta por **dois projetos Vercel independentes**: um para o backend (NestJS serverless) e outro para o frontend (Vite SPA).
+
+### Banco de dados
+
+Crie um banco PostgreSQL gratuito no [Neon](https://neon.tech) (integração nativa com Vercel) ou no [Supabase](https://supabase.com). Salve a connection string — ela será usada nas variáveis de ambiente abaixo.
+
+---
+
+### 1. Deploy do Backend
+
+1. No [Vercel Dashboard](https://vercel.com), clique em **Add New → Project**
+2. Importe o repositório e defina:
+   - **Root Directory:** `backend`
+   - **Build Command:** `npm run build` *(já configurado no `vercel.json`)*
+   - **Install Command:** `npm install`
+3. Em **Environment Variables**, adicione:
+
+| Variável | Valor |
+|---|---|
+| `NODE_ENV` | `production` |
+| `DATABASE_URL` | `postgresql://user:pass@host/db?sslmode=require` |
+| `DB_SSL` | `true` |
+| `DB_SYNCHRONIZE` | `false` |
+| `JWT_SECRET` | *(string longa e aleatória)* |
+| `JWT_EXPIRES_IN` | `7d` |
+| `FRONTEND_URL` | URL do frontend Vercel (adicionar depois) |
+| `PORT` | `3000` |
+
+4. Clique em **Deploy**. As migrations rodam automaticamente no primeiro boot.
+5. Anote a URL gerada (ex: `https://fintech-api-xyz.vercel.app`).
+
+---
+
+### 2. Deploy do Frontend
+
+1. No Vercel Dashboard, crie outro projeto com:
+   - **Root Directory:** `frontend`
+   - **Build Command:** `npm run build`
+   - **Output Directory:** `dist`
+2. Em **Environment Variables**, adicione:
+
+| Variável | Valor |
+|---|---|
+| `VITE_API_URL` | `https://fintech-api-xyz.vercel.app/api` |
+
+3. Clique em **Deploy**.
+4. Anote a URL do frontend (ex: `https://fintech-app-xyz.vercel.app`).
+
+---
+
+### 3. Conectar os dois projetos
+
+Volte ao projeto **backend** no Vercel → **Settings → Environment Variables** e atualize `FRONTEND_URL` com a URL do frontend. Depois em **Deployments**, redeploy o backend para aplicar.
+
+---
+
+### Credenciais seed
+
+Após o primeiro deploy do backend, o banco já contém um usuário de teste:
+
+| Campo | Valor |
+|---|---|
+| E-mail | `admin@fintech.com` |
+| Senha | `senha123` |
+
+---
+
 ## Configuração — Backend
 
 ```bash
