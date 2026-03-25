@@ -210,12 +210,14 @@ cd backend
 npm test
 ```
 
-O projeto conta com **12 testes unitários** em 2 suites:
+O projeto conta com **24 testes unitários** em 4 suites:
 
 | Suite | Testes |
 |---|---|
 | `AuthService` | login com sucesso, usuário inexistente, senha inválida, registro, logout |
 | `CategoriesService` | create, findAll, findOne (sucesso / não encontrado / proibido), update, remove |
+| `TransactionsService` | create, findAll (sem filtros / com filtros), findOne (sucesso / não encontrado / proibido), update, remove |
+| `DashboardService` | saldo zerado, cálculo de saldo, top categorias por despesa |
 
 ---
 

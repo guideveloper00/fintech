@@ -7,6 +7,10 @@ import { UsersModule } from './users/users.module';
 import { CategoriesModule } from './categories/categories.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { InitialSetup1742000000000 } from './database/migrations/1742000000000-InitialSetup';
+import { CreateUsersTable1742000000001 } from './database/migrations/1742000000001-CreateUsersTable';
+import { CreateCategoriesAndTransactions1742000000002 } from './database/migrations/1742000000002-CreateCategoriesAndTransactions';
+import { AddDescriptionToCategories1742000000003 } from './database/migrations/1742000000003-AddDescriptionToCategories';
 
 type Env = {
   NODE_ENV: 'development' | 'test' | 'production';
@@ -50,7 +54,14 @@ type Env = {
           autoLoadEntities: true,
           synchronize: dbSynchronize === 'true',
           ssl: dbSsl === 'true' ? { rejectUnauthorized: false } : false,
-          migrations: [isProd ? 'dist/database/migrations/*.js' : 'src/database/migrations/*.ts'],
+          migrations: isProd
+            ? ['dist/database/migrations/*.js']
+            : [
+                InitialSetup1742000000000,
+                CreateUsersTable1742000000001,
+                CreateCategoriesAndTransactions1742000000002,
+                AddDescriptionToCategories1742000000003,
+              ],
           migrationsRun: isProd,
         };
       },

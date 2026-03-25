@@ -103,7 +103,10 @@ describe('AuthService', () => {
   describe('logout', () => {
     it('should clear the access_token cookie', () => {
       service.logout(mockResponse);
-      expect(mockResponse.clearCookie).toHaveBeenCalledWith('access_token', { path: '/' });
+      expect(mockResponse.clearCookie).toHaveBeenCalledWith(
+        'access_token',
+        expect.objectContaining({ path: '/', httpOnly: true }),
+      );
     });
   });
 });
