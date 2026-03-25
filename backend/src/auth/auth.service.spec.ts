@@ -12,6 +12,7 @@ const mockUser: User = {
   name: 'Admin',
   email: 'admin@fintech.com',
   password: 'hashed-password',
+  avatarUrl: null,
   createdAt: new Date(),
   updatedAt: new Date(),
 };

@@ -1,4 +1,4 @@
-import type { TopCategory } from '../../../types';
+import type { TopCategory } from '../../../shared/types';
 
 // ─── PeriodFilter ─────────────────────────────────────────────────────────────
 
@@ -27,5 +27,6 @@ export interface SummaryCardProps {
 
 export interface TopCategoriesCardProps {
   categories: TopCategory[];
+  totalExpense: number;
   loading: boolean;
 }

@@ -1,5 +1,5 @@
 import { api } from '../lib/api';
-import type { Category, CreateCategoryPayload, UpdateCategoryPayload } from '../types';
+import type { Category, CreateCategoryPayload, UpdateCategoryPayload } from '../shared/types';
 
 export const categoriesService = {
   async findAll(): Promise<Category[]> {

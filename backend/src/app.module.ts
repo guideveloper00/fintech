@@ -11,6 +11,7 @@ import { InitialSetup1742000000000 } from './database/migrations/1742000000000-I
 import { CreateUsersTable1742000000001 } from './database/migrations/1742000000001-CreateUsersTable';
 import { CreateCategoriesAndTransactions1742000000002 } from './database/migrations/1742000000002-CreateCategoriesAndTransactions';
 import { AddDescriptionToCategories1742000000003 } from './database/migrations/1742000000003-AddDescriptionToCategories';
+import { AddAvatarToUsers1742000000004 } from './database/migrations/1742000000004-AddAvatarToUsers';
 
 type Env = {
   NODE_ENV: 'development' | 'test' | 'production';
@@ -61,6 +62,7 @@ type Env = {
                 CreateUsersTable1742000000001,
                 CreateCategoriesAndTransactions1742000000002,
                 AddDescriptionToCategories1742000000003,
+                AddAvatarToUsers1742000000004,
               ],
           migrationsRun: isProd,
         };

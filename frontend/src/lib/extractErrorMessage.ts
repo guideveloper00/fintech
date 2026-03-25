@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { ApiErrorResponse } from '../types';
+import type { ApiErrorResponse } from '../shared/types';
 
 export function extractErrorMessage(error: unknown, fallback: string): string {
   if (axios.isAxiosError<ApiErrorResponse>(error)) {

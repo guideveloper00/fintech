@@ -2,6 +2,7 @@ import { ClassSerializerInterceptor, Logger, ValidationPipe } from '@nestjs/comm
 import { NestFactory, Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import * as cookieParser from 'cookie-parser';
+import { json } from 'express';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
@@ -16,6 +17,7 @@ async function bootstrap(): Promise<void> {
   const frontendUrl = config.get<string>('FRONTEND_URL', 'http://localhost:5173');
 
   app.use(cookieParser());
+  app.use(json({ limit: '5mb' })); // necessário para avatares em base64
 
   app.enableShutdownHooks();
 

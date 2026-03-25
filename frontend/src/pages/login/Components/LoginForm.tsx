@@ -11,37 +11,26 @@ import {
   TextField,
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { useRegister } from '../../hooks/useAuth';
-import { extractErrorMessage } from '../../lib/extractErrorMessage';
-import type { RegisterFormData } from './types';
+import { extractErrorMessage } from '@/lib/extractErrorMessage';
+import { useLogin } from '@/shared/hooks/useAuth';
+import { LoginPayload } from '@/services/auth.service';
 
-export default function RegisterForm() {
+
+export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
-  const { register, handleSubmit, watch, formState: { errors } } = useForm<RegisterFormData>();
-  const { mutate: registerUser, isPending, error } = useRegister();
+  const { register, handleSubmit, formState: { errors } } = useForm<LoginPayload>();
+  const { mutate: login, isPending, error } = useLogin();
 
-  const onSubmit: SubmitHandler<RegisterFormData> = ({ confirmPassword: _, ...payload }) =>
-    registerUser(payload);
+  const onSubmit: SubmitHandler<LoginPayload> = (data) => login(data);
 
   return (
     <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
       <Stack spacing={2}>
         {error && (
           <Alert severity="error">
-            {extractErrorMessage(error, 'Erro ao criar conta. Tente novamente.')}
+            {extractErrorMessage(error, 'Erro ao entrar. Verifique suas credenciais.')}
           </Alert>
         )}
-        <TextField
-          label="Nome completo"
-          autoComplete="name"
-          fullWidth
-          {...register('name', {
-            required: 'Nome é obrigatório',
-            minLength: { value: 2, message: 'Mínimo de 2 caracteres' },
-          })}
-          error={!!errors.name}
-          helperText={errors.name?.message}
-        />
 
         <TextField
           label="E-mail"
@@ -62,12 +51,9 @@ export default function RegisterForm() {
         <TextField
           label="Senha"
           type={showPassword ? 'text' : 'password'}
-          autoComplete="new-password"
+          autoComplete="current-password"
           fullWidth
-          {...register('password', {
-            required: 'Senha é obrigatória',
-            minLength: { value: 6, message: 'Mínimo de 6 caracteres' },
-          })}
+          {...register('password', { required: 'Senha é obrigatória' })}
           error={!!errors.password}
           helperText={errors.password?.message}
           InputProps={{
@@ -81,19 +67,6 @@ export default function RegisterForm() {
           }}
         />
 
-        <TextField
-          label="Confirmar senha"
-          type={showPassword ? 'text' : 'password'}
-          autoComplete="new-password"
-          fullWidth
-          {...register('confirmPassword', {
-            required: 'Confirmação é obrigatória',
-            validate: (val) => val === watch('password') || 'As senhas não coincidem',
-          })}
-          error={!!errors.confirmPassword}
-          helperText={errors.confirmPassword?.message}
-        />
-
         <Button
           type="submit"
           variant="contained"
@@ -102,9 +75,10 @@ export default function RegisterForm() {
           disabled={isPending}
           startIcon={isPending ? <CircularProgress size={18} color="inherit" /> : undefined}
         >
-          {isPending ? 'Criando conta...' : 'Criar conta'}
+          {isPending ? 'Entrando...' : 'Entrar'}
         </Button>
       </Stack>
     </Box>
   );
 }
+

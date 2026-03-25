@@ -13,7 +13,7 @@ import {
   Typography,
 } from '@mui/material';
 import { Delete, Edit } from '@mui/icons-material';
-import type { CategoriesTableProps } from './types';
+import type { CategoriesTableProps } from '../types';
 
 function formatDate(iso: string): string {
   return new Intl.DateTimeFormat('pt-BR').format(new Date(iso));

@@ -1,4 +1,4 @@
-import type { Category } from '../../../types';
+import type { Category } from '../../../shared/types';
 
 // ─── CategoryFormDialog ───────────────────────────────────────────────────────
 
@@ -13,6 +13,7 @@ export interface CategoryFormDialogProps {
   onSubmit: (payload: CategoryFormData) => void;
   editing?: Category | null;
   isPending: boolean;
+  existingNames: string[];
 }
 
 // ─── CategoriesTable ─────────────────────────────────────────────────────────

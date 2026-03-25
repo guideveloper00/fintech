@@ -10,7 +10,7 @@ import {
   Typography,
 } from '@mui/material';
 import { Category as CategoryIcon } from '@mui/icons-material';
-import type { TopCategoriesCardProps } from './types';
+import type { TopCategoriesCardProps } from '../types';
 
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
@@ -18,8 +18,8 @@ function formatCurrency(value: number): string {
 
 const BAR_COLORS = ['error', 'warning', 'info'] as const;
 
-export default function TopCategoriesCard({ categories, loading }: TopCategoriesCardProps) {
-  const maxExpense = categories[0]?.total ?? 1;
+export default function TopCategoriesCard({ categories, totalExpense, loading }: TopCategoriesCardProps) {
+  const base = totalExpense > 0 ? totalExpense : 1;
 
   return (
     <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
@@ -55,7 +55,7 @@ export default function TopCategoriesCard({ categories, loading }: TopCategories
         {!loading && categories.length > 0 && (
           <Stack spacing={3}>
             {categories.map((cat, index) => {
-              const pct = Math.round((cat.total / maxExpense) * 100);
+              const pct = Math.round((cat.total / base) * 100);
               const barColor = BAR_COLORS[index] ?? 'inherit';
               return (
                 <Box key={cat.categoryId}>
@@ -73,12 +73,18 @@ export default function TopCategoriesCard({ categories, loading }: TopCategories
                         variant="outlined"
                         sx={{ width: 44 }}
                       />
-                      <Typography variant="body2" fontWeight={500}>
+                      <Typography
+                        variant="body2"
+                        fontWeight={cat.categoryName === 'Sem categoria' ? 700 : 500}
+                      >
                         {cat.categoryName}
                       </Typography>
                     </Stack>
                     <Typography variant="body2" fontWeight={600} color="error.main">
                       {formatCurrency(cat.total)}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                      {pct}%
                     </Typography>
                   </Stack>
                   <LinearProgress

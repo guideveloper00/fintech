@@ -1,6 +1,6 @@
 import axios, { AxiosError } from 'axios';
 import { useAuthStore } from '@/store/auth.store';
-import type { ApiErrorResponse } from '@/types';
+import type { ApiErrorResponse } from '@/shared/types';
 
 /**
  * withCredentials: true — faz o browser enviar o HttpOnly cookie

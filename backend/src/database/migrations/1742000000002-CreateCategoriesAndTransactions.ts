@@ -5,7 +5,7 @@ export class CreateCategoriesAndTransactions1742000000002
 {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // --------------------------------------------------------
-    // CATEGORIES
+    // CATEGORIAS
     // --------------------------------------------------------
     await queryRunner.query(`
       CREATE TABLE "categories" (
@@ -23,7 +23,7 @@ export class CreateCategoriesAndTransactions1742000000002
     `);
 
     // --------------------------------------------------------
-    // TRANSACTIONS
+    // TRANSAÇÕES
     // --------------------------------------------------------
     await queryRunner.query(`
       CREATE TYPE "transaction_type_enum" AS ENUM ('income', 'expense')

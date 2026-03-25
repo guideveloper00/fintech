@@ -5,12 +5,12 @@ import {
   TrendingUp as IncomeIcon,
   TrendingDown as ExpenseIcon,
 } from '@mui/icons-material';
-import { useDashboard } from '../../hooks/useDashboard';
-import type { DashboardQueryParams } from '../../types';
+import type { DashboardQueryParams } from '../../shared/types';
 import { extractErrorMessage } from '../../lib/extractErrorMessage';
-import SummaryCard from './SummaryCard';
-import TopCategoriesCard from './TopCategoriesCard';
-import DashboardPeriodFilter from './DashboardPeriodFilter';
+import SummaryCard from './Components/SummaryCard';
+import TopCategoriesCard from './Components/TopCategoriesCard';
+import DashboardPeriodFilter from './Components/DashboardPeriodFilter';
+import { useDashboard } from '@/shared/hooks/useDashboard';
 
 export default function DashboardPage() {
   const [startDate, setStartDate] = useState('');
@@ -20,6 +20,7 @@ export default function DashboardPage() {
   const { data, isLoading, isError, error } = useDashboard(appliedParams);
 
   function handleApply() {
+    if (startDate && endDate && endDate < startDate) return;
     const params: DashboardQueryParams = {};
     if (startDate) params.startDate = startDate;
     if (endDate) params.endDate = endDate;
@@ -90,6 +91,7 @@ export default function DashboardPage() {
 
       <TopCategoriesCard
         categories={data?.topExpenseCategories ?? []}
+        totalExpense={data?.totalExpense ?? 0}
         loading={isLoading}
       />
     </Box>

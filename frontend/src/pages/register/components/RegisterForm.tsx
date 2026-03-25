@@ -11,25 +11,37 @@ import {
   TextField,
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { useLogin } from '../../hooks/useAuth';
-import { extractErrorMessage } from '../../lib/extractErrorMessage';
-import type { LoginPayload } from '../../services/auth.service';
+import { useRegister } from '../../../shared/hooks/useAuth';
+import { extractErrorMessage } from '../../../lib/extractErrorMessage';
+import type { RegisterFormData } from '../types';
 
-export default function LoginForm() {
+export default function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
-  const { register, handleSubmit, formState: { errors } } = useForm<LoginPayload>();
-  const { mutate: login, isPending, error } = useLogin();
+  const { register, handleSubmit, watch, formState: { errors } } = useForm<RegisterFormData>();
+  const { mutate: registerUser, isPending, error } = useRegister();
 
-  const onSubmit: SubmitHandler<LoginPayload> = (data) => login(data);
+  const onSubmit: SubmitHandler<RegisterFormData> = ({ confirmPassword: _, ...payload }) =>
+    registerUser(payload);
 
   return (
     <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
       <Stack spacing={2}>
         {error && (
           <Alert severity="error">
-            {extractErrorMessage(error, 'Erro ao entrar. Verifique suas credenciais.')}
+            {extractErrorMessage(error, 'Erro ao criar conta. Tente novamente.')}
           </Alert>
         )}
+        <TextField
+          label="Nome completo"
+          autoComplete="name"
+          fullWidth
+          {...register('name', {
+            required: 'Nome é obrigatório',
+            minLength: { value: 2, message: 'Mínimo de 2 caracteres' },
+          })}
+          error={!!errors.name}
+          helperText={errors.name?.message}
+        />
 
         <TextField
           label="E-mail"
@@ -50,9 +62,12 @@ export default function LoginForm() {
         <TextField
           label="Senha"
           type={showPassword ? 'text' : 'password'}
-          autoComplete="current-password"
+          autoComplete="new-password"
           fullWidth
-          {...register('password', { required: 'Senha é obrigatória' })}
+          {...register('password', {
+            required: 'Senha é obrigatória',
+            minLength: { value: 6, message: 'Mínimo de 6 caracteres' },
+          })}
           error={!!errors.password}
           helperText={errors.password?.message}
           InputProps={{
@@ -66,6 +81,19 @@ export default function LoginForm() {
           }}
         />
 
+        <TextField
+          label="Confirmar senha"
+          type={showPassword ? 'text' : 'password'}
+          autoComplete="new-password"
+          fullWidth
+          {...register('confirmPassword', {
+            required: 'Confirmação é obrigatória',
+            validate: (val) => val === watch('password') || 'As senhas não coincidem',
+          })}
+          error={!!errors.confirmPassword}
+          helperText={errors.confirmPassword?.message}
+        />
+
         <Button
           type="submit"
           variant="contained"
@@ -74,10 +102,9 @@ export default function LoginForm() {
           disabled={isPending}
           startIcon={isPending ? <CircularProgress size={18} color="inherit" /> : undefined}
         >
-          {isPending ? 'Entrando...' : 'Entrar'}
+          {isPending ? 'Criando conta...' : 'Criar conta'}
         </Button>
       </Stack>
     </Box>
   );
 }
-

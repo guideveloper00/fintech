@@ -16,7 +16,7 @@ import {
   Typography,
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
-import type { TransactionsTableProps } from './types';
+import type { TransactionsTableProps } from '../types';
 
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
@@ -83,9 +83,10 @@ export default function TransactionsTable({
                     </Typography>
                   </TableCell>
                   <TableCell>
-                    <Typography variant="body2" color="text.secondary">
-                      {t.category?.name ?? '—'}
-                    </Typography>
+                    {t.category?.name
+                      ? <Typography variant="body2" color="text.secondary">{t.category.name}</Typography>
+                      : <Typography variant="body2" fontWeight={700} color="text.secondary">Sem categoria</Typography>
+                    }
                   </TableCell>
                   <TableCell>
                     <Chip

@@ -5,7 +5,7 @@ import type {
   UpdateTransactionPayload,
   TransactionFilters,
   PaginatedData,
-} from '../types';
+} from '../shared/types';
 
 export const transactionsService = {
   async findAll(filters: TransactionFilters = {}): Promise<PaginatedData<Transaction>> {

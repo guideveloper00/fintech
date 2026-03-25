@@ -1,7 +1,8 @@
+import { authService, LoginPayload, RegisterPayload } from '@/services/auth.service';
+import { UpdateProfilePayload, usersService } from '@/services/users.service';
+import { useAuthStore } from '@/store/auth.store';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { authService, type LoginPayload, type RegisterPayload } from '../services/auth.service';
-import { useAuthStore } from '../store/auth.store';
 
 export const AUTH_QUERY_KEY = ['auth', 'me'] as const;
 
@@ -52,6 +53,20 @@ export function useLogout() {
       logout();
       queryClient.clear();
       navigate('/login', { replace: true });
+    },
+  });
+}
+
+export function useUpdateProfile() {
+  const { setAuth } = useAuthStore();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: UpdateProfilePayload) => usersService.updateProfile(payload),
+    onSuccess: (updatedUser) => {
+      // Atualiza o store de auth e o cache do React Query
+      setAuth(updatedUser);
+      queryClient.setQueryData(AUTH_QUERY_KEY, updatedUser);
     },
   });
 }

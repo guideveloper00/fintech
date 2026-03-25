@@ -28,7 +28,7 @@ export class DashboardService {
   async getSummary(userId: string, query: DashboardQueryDto = {}): Promise<DashboardData> {
     const { startDate, endDate } = query;
 
-    // Base totals query builder
+    // Builder de totais base
     const totalsQb = this.transactionRepo
       .createQueryBuilder('t')
       .select('t.type', 'type')
@@ -48,18 +48,17 @@ export class DashboardService {
       totalsRaw.find((r) => r.type === TransactionType.EXPENSE)?.total ?? 0,
     );
 
-    // Top 3 expense categories builder
+    // Builder das top 3 categorias de despesa (NULL → "Sem categoria")
     const topQb = this.transactionRepo
       .createQueryBuilder('t')
-      .innerJoin('t.category', 'c')
-      .select('c.id', 'categoryId')
-      .addSelect('c.name', 'categoryName')
+      .leftJoin('t.category', 'c')
+      .select("COALESCE(c.id::text, 'sem-categoria')", 'categoryId')
+      .addSelect("COALESCE(c.name, 'Sem categoria')", 'categoryName')
       .addSelect('SUM(t.amount)', 'total')
       .where('t.userId = :userId', { userId })
       .andWhere('t.type = :type', { type: TransactionType.EXPENSE })
-      .andWhere('t.categoryId IS NOT NULL')
-      .groupBy('c.id')
-      .addGroupBy('c.name')
+      .groupBy("COALESCE(c.id::text, 'sem-categoria')")
+      .addGroupBy("COALESCE(c.name, 'Sem categoria')")
       .orderBy('SUM(t.amount)', 'DESC')
       .limit(3);
 

@@ -6,6 +6,7 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
+  DialogContentText,
   DialogTitle,
   FormControl,
   FormHelperText,
@@ -16,15 +17,17 @@ import {
   Stack,
   TextField,
 } from '@mui/material';
-import type { Transaction, CreateTransactionPayload } from '../types';
-import { useCategories } from '../hooks/useCategories';
-import { useCreateTransaction, useUpdateTransaction } from '../hooks/useTransactions';
-import { extractErrorMessage } from '../lib/extractErrorMessage';
+import { formatBRL, digitsToNumber } from '../../../shared/helpers';
+import type { Transaction, CreateTransactionPayload } from '../../../shared/types';
+import { extractErrorMessage } from '../../../lib/extractErrorMessage';
+import { useCreateTransaction, useUpdateTransaction } from '@/shared/hooks/useTransactions';
+import { useCategories } from '@/shared/hooks/useCategories';
 
 interface TransactionFormDialogProps {
   open: boolean;
   editing: Transaction | null;
   onClose: () => void;
+  existingTransactions?: Transaction[];
 }
 
 type FormValues = Omit<CreateTransactionPayload, 'amount'> & { amount: number | '' };
@@ -33,12 +36,14 @@ export default function TransactionFormDialog({
   open,
   editing,
   onClose,
+  existingTransactions = [],
 }: TransactionFormDialogProps) {
   const { data: categories = [] } = useCategories();
   const { mutate: create, isPending: creating } = useCreateTransaction();
   const { mutate: update, isPending: updating } = useUpdateTransaction();
   const isPending = creating || updating;
   const [mutationError, setMutationError] = useState<string | null>(null);
+  const [pendingPayload, setPendingPayload] = useState<CreateTransactionPayload | null>(null);
 
   const {
     control,
@@ -56,7 +61,6 @@ export default function TransactionFormDialog({
     } as FormValues,
   });
 
-  // Preenche o form ao abrir para edição
   useEffect(() => {
     if (open) {
       setMutationError(null);
@@ -96,14 +100,26 @@ export default function TransactionFormDialog({
         },
       );
     } else {
-      create(payload as CreateTransactionPayload, {
-        onSuccess: onClose,
-        onError: (err) => setMutationError(extractErrorMessage(err, 'Erro ao criar transação.')),
-      });
+      const isDuplicate = existingTransactions.some(
+        (t) => Number(t.amount) === Number(payload.amount) && t.date === payload.date,
+      );
+      if (isDuplicate) {
+        setPendingPayload(payload as CreateTransactionPayload);
+      } else {
+        submitCreate(payload as CreateTransactionPayload);
+      }
     }
   };
 
+  const submitCreate = (payload: CreateTransactionPayload) => {
+    create(payload, {
+      onSuccess: () => { setPendingPayload(null); onClose(); },
+      onError: (err) => setMutationError(extractErrorMessage(err, 'Erro ao criar transação.')),
+    });
+  };
+
   return (
+    <>
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>{editing ? 'Editar transação' : 'Nova transação'}</DialogTitle>
 
@@ -125,20 +141,31 @@ export default function TransactionFormDialog({
             helperText={errors.description?.message}
           />
 
-          <TextField
-            label="Valor"
-            type="number"
-            fullWidth
-            inputProps={{ min: 0.01, step: 0.01 }}
-            InputProps={{
-              startAdornment: <InputAdornment position="start">R$</InputAdornment>,
-            }}
-            {...register('amount', {
+          <Controller
+            name="amount"
+            control={control}
+            rules={{
               required: 'Valor é obrigatório',
-              min: { value: 0.01, message: 'Valor deve ser positivo' },
-            })}
-            error={!!errors.amount}
-            helperText={errors.amount?.message}
+              validate: (v) => Number(v) >= 0.01 || 'Valor deve ser positivo',
+            }}
+            render={({ field }) => (
+              <TextField
+                label="Valor"
+                fullWidth
+                inputMode="numeric"
+                value={formatBRL(field.value)}
+                onChange={(e) => {
+                  const digits = e.target.value.replace(/\D/g, '');
+                  field.onChange(digitsToNumber(digits));
+                }}
+                onBlur={field.onBlur}
+                InputProps={{
+                  startAdornment: <InputAdornment position="start">R$</InputAdornment>,
+                }}
+                error={!!errors.amount}
+                helperText={errors.amount?.message}
+              />
+            )}
           />
 
           {/* Tipo */}
@@ -204,5 +231,26 @@ export default function TransactionFormDialog({
         </Button>
       </DialogActions>
     </Dialog>
+
+    <Dialog open={!!pendingPayload} onClose={() => setPendingPayload(null)}>
+      <DialogTitle>Transação duplicada?</DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          Já existe uma transação com o mesmo valor e data. Deseja cadastrá-la mesmo assim?
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setPendingPayload(null)}>Cancelar</Button>
+        <Button
+          variant="contained"
+          color="warning"
+          disabled={isPending}
+          onClick={() => pendingPayload && submitCreate(pendingPayload)}
+        >
+          {isPending ? 'Salvando...' : 'Confirmar assim mesmo'}
+        </Button>
+      </DialogActions>
+    </Dialog>
+    </>
   );
 }

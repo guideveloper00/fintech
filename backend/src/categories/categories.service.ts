@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { Category } from './entities/category.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { assertUniqueName } from './helpers/assertUniqueName';
 
 @Injectable()
 export class CategoriesService {
@@ -16,7 +17,8 @@ export class CategoriesService {
     private readonly repo: Repository<Category>,
   ) {}
 
-  create(userId: string, dto: CreateCategoryDto): Promise<Category> {
+  async create(userId: string, dto: CreateCategoryDto): Promise<Category> {
+    await assertUniqueName(this.repo, userId, dto.name);
     const category = this.repo.create({ ...dto, userId });
     return this.repo.save(category);
   }
@@ -41,6 +43,7 @@ export class CategoriesService {
     dto: UpdateCategoryDto,
   ): Promise<Category> {
     const category = await this.findOne(id, userId);
+    if (dto.name) await assertUniqueName(this.repo, userId, dto.name, id);
     Object.assign(category, dto);
     return this.repo.save(category);
   }

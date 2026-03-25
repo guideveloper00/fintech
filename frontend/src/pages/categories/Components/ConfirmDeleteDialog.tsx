@@ -6,7 +6,7 @@ import {
   DialogContentText,
   DialogTitle,
 } from '@mui/material';
-import type { ConfirmDeleteDialogProps } from './types';
+import type { ConfirmDeleteDialogProps } from '../types';
 
 export default function ConfirmDeleteDialog({
   open,

@@ -6,7 +6,8 @@ import RegisterPage from '@/pages/register';
 import DashboardPage from '@/pages/dashboard';
 import TransactionsPage from '@/pages/transactions';
 import CategoriesPage from '@/pages/categories';
-import AppLayout from '@/components/AppLayout';
+import AppLayout from '@/shared/components/AppLayout';
+import ProfilePage from '@/pages/profile';
 
 function PrivateRoute({ children }: { children: React.ReactNode }): JSX.Element {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -42,6 +43,7 @@ export default function App(): JSX.Element {
           <Route path="/" element={<DashboardPage />} />
           <Route path="/transactions" element={<TransactionsPage />} />
           <Route path="/categories" element={<CategoriesPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -9,6 +9,7 @@ function makeQb(rawOverride?: Array<Record<string, string>>) {
   const qb: Record<string, jest.Mock> = {
     select: jest.fn().mockReturnThis(),
     addSelect: jest.fn().mockReturnThis(),
+    leftJoin: jest.fn().mockReturnThis(),
     innerJoin: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
     andWhere: jest.fn().mockReturnThis(),
@@ -40,13 +41,13 @@ describe('DashboardService', () => {
     jest.clearAllMocks();
   });
 
-  // ------------------------------------------------------------------
+
   describe('getSummary', () => {
     it('should return zeroed summary when there are no transactions', async () => {
-      // Both queries return empty arrays
+      // Ambas as queries retornam arrays vazios
       mockRepo.createQueryBuilder
-        .mockReturnValueOnce(makeQb([]))   // totals query
-        .mockReturnValueOnce(makeQb([]));  // top categories query
+        .mockReturnValueOnce(makeQb([]))   // query de totais
+        .mockReturnValueOnce(makeQb([]));  // query de top categorias
 
       const result = await service.getSummary(userId);
 
@@ -88,6 +89,21 @@ describe('DashboardService', () => {
       expect(result.topExpenseCategories).toHaveLength(3);
       expect(result.topExpenseCategories[0].categoryName).toBe('Alimentação');
       expect(result.topExpenseCategories[0].total).toBe(300);
+    });
+
+    it('should include uncategorized expenses as "Sem categoria"', async () => {
+      const totalsRaw = [{ type: TransactionType.EXPENSE, total: '400' }];
+      const topRaw = [
+        { categoryId: 'sem-categoria', categoryName: 'Sem categoria', total: '400' },
+      ];
+      mockRepo.createQueryBuilder
+        .mockReturnValueOnce(makeQb(totalsRaw))
+        .mockReturnValueOnce(makeQb(topRaw));
+
+      const result = await service.getSummary(userId);
+
+      expect(result.topExpenseCategories[0].categoryName).toBe('Sem categoria');
+      expect(result.topExpenseCategories[0].total).toBe(400);
     });
 
     it('should handle income-only history (no expenses)', async () => {

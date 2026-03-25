@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { Alert, Box, Button, Stack, Typography } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
-import type { Transaction, TransactionFilters } from '../../types';
-import { useTransactions, useDeleteTransaction } from '../../hooks/useTransactions';
-import { useCategories } from '../../hooks/useCategories';
-import TransactionFormDialog from '../../components/TransactionFormDialog';
-import TransactionsFilters from './TransactionsFilters';
-import TransactionsTable from './TransactionsTable';
-import ConfirmDeleteDialog from './ConfirmDeleteDialog';
+import type { Transaction, TransactionFilters } from '../../shared/types';
+import TransactionFormDialog from './Components/TransactionFormDialog';
+import TransactionsFilters from './Components/TransactionsFilters';
+import TransactionsTable from './Components/TransactionsTable';
+import ConfirmDeleteDialog from './Components/ConfirmDeleteDialog';
+import { useDeleteTransaction, useTransactions } from '@/shared/hooks/useTransactions';
+import { useCategories } from '@/shared/hooks/useCategories';
 
 const EMPTY_FILTERS: TransactionFilters = { page: 1, limit: 10 };
 
@@ -30,7 +30,8 @@ export default function TransactionsPage() {
   const hasActiveFilters =
     !!filters.type || !!filters.categoryId || !!filters.startDate || !!filters.endDate;
 
-  const applyFilters = () =>
+  const applyFilters = () => {
+    if (localStart && localEnd && localEnd < localStart) return;
     setFilters({
       page: 1,
       limit: 10,
@@ -39,6 +40,7 @@ export default function TransactionsPage() {
       startDate: localStart || undefined,
       endDate: localEnd || undefined,
     });
+  };
 
   const clearFilters = () => {
     setLocalType('');
@@ -65,7 +67,7 @@ export default function TransactionsPage() {
 
   return (
     <Box>
-      {/* Header */}
+      {/* Cabeçalho */}
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={3}>
         <Box>
           <Typography variant="h4" fontWeight={700} gutterBottom>
@@ -115,6 +117,7 @@ export default function TransactionsPage() {
         open={formOpen}
         editing={editing}
         onClose={() => setFormOpen(false)}
+        existingTransactions={data?.items ?? []}
       />
 
       <ConfirmDeleteDialog

@@ -1,5 +1,5 @@
 import { Box, Card, CardContent, Stack, Typography } from '@mui/material';
-import type { AuthPageWrapperProps } from './types';
+import { AuthPageWrapperProps } from '../types';
 
 export default function AuthPageWrapper({ title, subtitle, children, footer, error }: AuthPageWrapperProps) {
   return (

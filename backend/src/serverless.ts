@@ -1,13 +1,8 @@
-/**
- * Serverless entry point for Vercel deployment.
- * Bootstraps the NestJS application without calling app.listen().
- * The Express instance is cached between invocations to avoid cold-start
- * penalty on every request.
- */
 import { NestFactory, Reflector } from '@nestjs/core';
 import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as cookieParser from 'cookie-parser';
+import { json } from 'express';
 import type { Express } from 'express';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
@@ -18,7 +13,7 @@ let cachedServer: Express | null = null;
 
 async function bootstrap(): Promise<Express> {
   const app = await NestFactory.create(AppModule, {
-    // Reduce log verbosity in production to keep Vercel logs clean
+    // Reduz verbosidade dos logs em produção
     logger:
       process.env.NODE_ENV === 'production'
         ? ['error', 'warn']
@@ -29,6 +24,7 @@ async function bootstrap(): Promise<Express> {
   const frontendUrl = config.get<string>('FRONTEND_URL', '*');
 
   app.use(cookieParser());
+  app.use(json({ limit: '5mb' })); // necessário para avatares em base64
 
   app.enableCors({
     origin: frontendUrl,
@@ -55,13 +51,11 @@ async function bootstrap(): Promise<Express> {
     new ResponseInterceptor(),
   );
 
-  // init() without listen() — Vercel handles the HTTP layer
   await app.init();
 
   return app.getHttpAdapter().getInstance() as Express;
 }
 
-/** Returns a cached (or newly created) Express handler for the NestJS app. */
 export async function getServer(): Promise<Express> {
   if (!cachedServer) {
     cachedServer = await bootstrap();

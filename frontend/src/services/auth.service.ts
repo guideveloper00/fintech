@@ -1,5 +1,5 @@
 import { api } from '../lib/api';
-import type { AuthResult } from '../types';
+import type { AuthResult } from '../shared/types';
 
 export interface LoginPayload {
   email: string;

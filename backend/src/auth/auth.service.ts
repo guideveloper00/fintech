@@ -53,8 +53,6 @@ export class AuthService {
     });
   }
 
-  // -------------------------------------------------------------------------
-
   private setAuthCookie(res: Response, user: User): void {
     const payload: JwtPayload = { sub: user.id, email: user.email };
     const token = this.jwtService.sign(payload);
@@ -63,8 +61,8 @@ export class AuthService {
     res.cookie(COOKIE_ACCESS_TOKEN, token, {
       httpOnly: true,
       secure: isProd,
-      // sameSite 'none' is required when frontend and backend are on different
-      // origins (e.g. two separate Vercel projects). Must be paired with secure:true.
+      // sameSite 'none' é obrigatório quando frontend e backend estão em origens distintas
+      // (ex.: dois projetos Vercel separados). Deve ser combinado com secure:true.
       sameSite: isProd ? 'none' : 'strict',
       maxAge: ACCESS_TOKEN_TTL_MS,
       path: '/',

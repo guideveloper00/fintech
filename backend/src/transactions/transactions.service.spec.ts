@@ -20,7 +20,7 @@ const mockTransaction: Transaction = {
   updatedAt: new Date(),
 };
 
-// Minimal QueryBuilder stub
+// Mock mínimo do QueryBuilder
 function makeQb(overrides: Record<string, jest.Mock> = {}) {
   const qb: Record<string, jest.Mock> = {
     leftJoinAndSelect: jest.fn().mockReturnThis(),
@@ -67,7 +67,6 @@ describe('TransactionsService', () => {
     jest.clearAllMocks();
   });
 
-  // ------------------------------------------------------------------
   describe('create', () => {
     it('should create and save a transaction', async () => {
       const dto = {
@@ -84,7 +83,6 @@ describe('TransactionsService', () => {
     });
   });
 
-  // ------------------------------------------------------------------
   describe('findAll', () => {
     it('should return paginated transactions for the user', async () => {
       const qb = makeQb();
@@ -110,7 +108,6 @@ describe('TransactionsService', () => {
     });
   });
 
-  // ------------------------------------------------------------------
   describe('findOne', () => {
     it('should return the transaction when it belongs to the user', async () => {
       mockRepo.findOne.mockResolvedValue(mockTransaction);
@@ -136,7 +133,6 @@ describe('TransactionsService', () => {
     });
   });
 
-  // ------------------------------------------------------------------
   describe('update', () => {
     it('should update and save the transaction', async () => {
       mockRepo.findOne.mockResolvedValue({ ...mockTransaction });
@@ -149,7 +145,6 @@ describe('TransactionsService', () => {
     });
   });
 
-  // ------------------------------------------------------------------
   describe('remove', () => {
     it('should remove the transaction', async () => {
       mockRepo.findOne.mockResolvedValue({ ...mockTransaction });

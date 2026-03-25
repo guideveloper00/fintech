@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { transactionsService } from '../services/transactions.service';
-import type { TransactionFilters, CreateTransactionPayload, UpdateTransactionPayload } from '../types';
 import { DASHBOARD_QUERY_KEY } from './useDashboard';
+import { transactionsService } from '@/services/transactions.service';
+import { CreateTransactionPayload, TransactionFilters, UpdateTransactionPayload } from '@/shared/types';
 
 export const TRANSACTIONS_QUERY_KEY = (filters: TransactionFilters) =>
   ['transactions', filters] as const;

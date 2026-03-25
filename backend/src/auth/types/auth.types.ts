@@ -2,7 +2,7 @@ import { User } from '../../users/entities/user.entity';
 
 /** Payload codificado dentro do JWT */
 export interface JwtPayload {
-  sub: string;  // userId
+  sub: string;  // id do usuário
   email: string;
 }
 

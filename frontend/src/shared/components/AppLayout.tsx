@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Outlet, NavLink } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import {
   AppBar,
   Box,
@@ -26,8 +26,8 @@ import {
   Category as CategoryIcon,
   Logout as LogoutIcon,
 } from '@mui/icons-material';
-import { useAuthStore } from '../store/auth.store';
 import { useLogout, useCurrentUser } from '../hooks/useAuth';
+import { useAuthStore } from '@/store/auth.store';
 
 const DRAWER_WIDTH = 240;
 
@@ -41,17 +41,16 @@ export default function AppLayout() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [mobileOpen, setMobileOpen] = useState(false);
+  const navigate = useNavigate();
 
   const user = useAuthStore((s) => s.user);
   const { mutate: logout } = useLogout();
 
-  // Keeps session in sync with the server — if the JWT cookie has expired
-  // the 401 interceptor in api.ts will clear auth and redirect to /login.
   useCurrentUser();
 
   const drawerContent = (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {/* Brand */}
+      {/* Logo / marca */}
       <Toolbar>
         <Typography variant="h6" fontWeight={700} color="primary">
           FinTech
@@ -59,7 +58,7 @@ export default function AppLayout() {
       </Toolbar>
       <Divider />
 
-      {/* Nav links */}
+      {/* Links de navegação */}
       <List sx={{ flex: 1, pt: 1 }}>
         {navItems.map(({ label, path, icon }) => (
           <ListItem key={path} disablePadding>
@@ -89,10 +88,16 @@ export default function AppLayout() {
 
       <Divider />
 
-      {/* User + Logout */}
-      <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-        <Avatar sx={{ width: 32, height: 32, fontSize: 14, bgcolor: 'primary.main' }}>
-          {user?.name?.[0]?.toUpperCase() ?? 'U'}
+      {/* Usuário + Logout */}
+      <Box
+        sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 1.5, cursor: 'pointer' }}
+        onClick={() => navigate('/profile')}
+      >
+        <Avatar
+          src={user?.avatarUrl ?? undefined}
+          sx={{ width: 32, height: 32, fontSize: 14, bgcolor: 'primary.main' }}
+        >
+          {!user?.avatarUrl && (user?.name?.[0]?.toUpperCase() ?? 'U')}
         </Avatar>
         <Box sx={{ flex: 1, overflow: 'hidden' }}>
           <Typography variant="body2" fontWeight={600} noWrap>
@@ -103,7 +108,7 @@ export default function AppLayout() {
           </Typography>
         </Box>
         <Tooltip title="Sair">
-          <IconButton size="small" onClick={() => logout()}>
+          <IconButton size="small" onClick={(e) => { e.stopPropagation(); logout(); }}>
             <LogoutIcon fontSize="small" />
           </IconButton>
         </Tooltip>
@@ -115,7 +120,7 @@ export default function AppLayout() {
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
       <CssBaseline />
 
-      {/* Top bar — only on mobile */}
+      {/* Barra superior — somente mobile */}
       {isMobile && (
         <AppBar
           position="fixed"
@@ -138,12 +143,12 @@ export default function AppLayout() {
         </AppBar>
       )}
 
-      {/* Sidebar */}
+      {/* Barra lateral */}
       <Box
         component="nav"
         sx={{ width: { md: DRAWER_WIDTH }, flexShrink: { md: 0 } }}
       >
-        {/* Mobile drawer */}
+        {/* Drawer mobile */}
         <Drawer
           variant="temporary"
           open={mobileOpen}
@@ -157,7 +162,7 @@ export default function AppLayout() {
           {drawerContent}
         </Drawer>
 
-        {/* Desktop permanent drawer */}
+        {/* Drawer permanente (desktop) */}
         <Drawer
           variant="permanent"
           sx={{
@@ -174,7 +179,7 @@ export default function AppLayout() {
         </Drawer>
       </Box>
 
-      {/* Main content */}
+      {/* Conteúdo principal */}
       <Box
         component="main"
         sx={{

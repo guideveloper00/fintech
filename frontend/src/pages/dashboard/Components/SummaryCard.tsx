@@ -7,7 +7,7 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import type { SummaryColor, SummaryCardProps } from './types';
+import type { SummaryColor, SummaryCardProps } from '../types';
 
 const colorMap: Record<SummaryColor, string> = {
   success: 'success.main',

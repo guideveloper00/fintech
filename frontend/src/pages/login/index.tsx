@@ -1,7 +1,7 @@
 import { Link as RouterLink } from 'react-router-dom';
 import { Link } from '@mui/material';
-import AuthPageWrapper from './AuthPageWrapper';
-import LoginForm from './LoginForm';
+import AuthPageWrapper from './Components/AuthPageWrapper';
+import LoginForm from './Components/LoginForm';
 
 export default function LoginPage() {
   return (

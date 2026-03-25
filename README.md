@@ -1,13 +1,9 @@
 # Fintech — Plataforma de Gestão Financeira Corporativa
 
 > Desafio técnico sênior · Teck Soluções  
-> Stack: **NestJS 10 · React 18 · TypeScript · PostgreSQL 18**
+> Stack: **NestJS 10 · React 18 · TypeScript · PostgreSQL**
 
----
-
-## Visão Geral
-
-Aplicação full-stack para gestão financeira corporativa com autenticação segura via **JWT em cookie HttpOnly**, cadastro de categorias, transações com filtros e paginação, e dashboard com indicadores calculados pela API.
+Aplicação full-stack para gestão financeira corporativa com autenticação via **JWT em cookie HttpOnly**, CRUD de categorias e transações com filtros e paginação, e dashboard com indicadores calculados pela API.
 
 ---
 
@@ -15,143 +11,41 @@ Aplicação full-stack para gestão financeira corporativa com autenticação se
 
 | Módulo | Funcionalidade |
 |---|---|
-| **Auth** | Registro, login, logout — token em cookie HttpOnly (sem token no JS) |
-| **Dashboard** | Saldo, receitas, despesas do mês + top categorias por gasto |
-| **Categorias** | CRUD completo com validações |
-| **Transações** | CRUD com filtros (tipo, categoria, período) e paginação |
-
----
-
-## Estrutura do Projeto (Monorepo)
-
-```
-Teste/
-├── backend/   # NestJS API
-└── frontend/  # React + Vite SPA
-```
+| **Auth** | Registro, login, logout — token em cookie HttpOnly |
+| **Dashboard** | Saldo, receitas, despesas + top 3 categorias por volume de despesas (% do total) |
+| **Categorias** | CRUD completo com validação de nome duplicado |
+| **Transações** | CRUD com filtros (tipo, categoria, período), paginação e detecção de duplicatas |
 
 ---
 
 ## Pré-requisitos
 
-- Node.js ≥ 20
-- PostgreSQL 18 rodando localmente
-- npm ≥ 10
+- Node.js ≥ 20 · npm ≥ 10 · PostgreSQL rodando localmente
 
 ---
 
-## Deploy com Docker Compose
-
-### Pré-requisito: Docker 24+ e Docker Compose v2
+## Instalação e execução local
 
 ```bash
-# Na raiz do projeto
-cp .env.docker.example .env
-# Edite .env com suas credenciais (principalmente JWT_SECRET e DB_PASSWORD)
+# 1. Instalar dependências
+cd backend && npm install
+cd ../frontend && npm install
 
-docker compose up -d --build
+# 2. Configurar backend
+cd backend && cp .env.example .env   # edite com suas credenciais
+
+# 3. Criar banco e rodar migrations
+# No PostgreSQL: CREATE DATABASE fintech_db;
+npm run migration:run
+
+# 4. Iniciar servidores (terminais separados)
+npm run start:dev             # API em http://localhost:3000/api
+cd ../frontend && npm run dev  # SPA em http://localhost:5173
 ```
 
-O app ficará disponível em `http://localhost` (ou na porta definida em `APP_PORT`).
+> O Vite proxy encaminha `/api` → `http://localhost:3000`; sem necessidade de configurar CORS em dev.
 
-As migrations são executadas **automaticamente** na inicialização do backend.
-
-```bash
-# Ver logs
-docker compose logs -f backend
-
-# Parar tudo
-docker compose down
-
-# Destruir dados do banco (cuidado!)
-docker compose down -v
-```
-
----
-
-## Deploy — Vercel (Produção)
-
-A aplicação é composta por **dois projetos Vercel independentes**: um para o backend (NestJS serverless) e outro para o frontend (Vite SPA).
-
-### Banco de dados
-
-Crie um banco PostgreSQL gratuito no [Neon](https://neon.tech) (integração nativa com Vercel) ou no [Supabase](https://supabase.com). Salve a connection string — ela será usada nas variáveis de ambiente abaixo.
-
----
-
-### 1. Deploy do Backend
-
-1. No [Vercel Dashboard](https://vercel.com), clique em **Add New → Project**
-2. Importe o repositório e defina:
-   - **Root Directory:** `backend`
-   - **Build Command:** `npm run build` *(já configurado no `vercel.json`)*
-   - **Install Command:** `npm install`
-3. Em **Environment Variables**, adicione:
-
-| Variável | Valor |
-|---|---|
-| `NODE_ENV` | `production` |
-| `DATABASE_URL` | `postgresql://user:pass@host/db?sslmode=require` |
-| `DB_SSL` | `true` |
-| `DB_SYNCHRONIZE` | `false` |
-| `JWT_SECRET` | *(string longa e aleatória)* |
-| `JWT_EXPIRES_IN` | `7d` |
-| `FRONTEND_URL` | URL do frontend Vercel (adicionar depois) |
-| `PORT` | `3000` |
-
-4. Clique em **Deploy**. As migrations rodam automaticamente no primeiro boot.
-5. Anote a URL gerada (ex: `https://fintech-api-xyz.vercel.app`).
-
----
-
-### 2. Deploy do Frontend
-
-1. No Vercel Dashboard, crie outro projeto com:
-   - **Root Directory:** `frontend`
-   - **Build Command:** `npm run build`
-   - **Output Directory:** `dist`
-2. Em **Environment Variables**, adicione:
-
-| Variável | Valor |
-|---|---|
-| `VITE_API_URL` | `https://fintech-api-xyz.vercel.app/api` |
-
-3. Clique em **Deploy**.
-4. Anote a URL do frontend (ex: `https://fintech-app-xyz.vercel.app`).
-
----
-
-### 3. Conectar os dois projetos
-
-Volte ao projeto **backend** no Vercel → **Settings → Environment Variables** e atualize `FRONTEND_URL` com a URL do frontend. Depois em **Deployments**, redeploy o backend para aplicar.
-
----
-
-### Credenciais seed
-
-Após o primeiro deploy do backend, o banco já contém um usuário de teste:
-
-| Campo | Valor |
-|---|---|
-| E-mail | `admin@fintech.com` |
-| Senha | `senha123` |
-
----
-
-## Configuração — Backend
-
-```bash
-cd backend
-npm install
-```
-
-Crie o arquivo `.env` a partir do exemplo:
-
-```bash
-cp .env.example .env
-```
-
-Edite `.env` com as suas credenciais:
+### Variáveis de ambiente — `backend/.env`
 
 ```env
 NODE_ENV=development
@@ -164,123 +58,119 @@ JWT_EXPIRES_IN=7d
 FRONTEND_URL=http://localhost:5173
 ```
 
-Crie o banco de dados no PostgreSQL:
+---
 
-```sql
-CREATE DATABASE fintech_db;
-```
-
-Execute as migrations:
+## Docker Compose
 
 ```bash
-npm run migration:run
+cp .env.docker.example .env   # edite JWT_SECRET e DB_PASSWORD
+docker compose up -d --build  # app em http://localhost
 ```
 
-> Isso cria as tabelas e insere o usuário admin padrão:  
-> **e-mail:** `admin@fintech.com` · **senha:** `senha123`
-
-Inicie o servidor em desenvolvimento:
-
-```bash
-npm run start:dev
-```
-
-A API estará disponível em `http://localhost:3000/api`.
+Migrations rodam automaticamente na inicialização.
 
 ---
 
-## Configuração — Frontend
+## Deploy (Vercel + Neon)
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
+1. **Banco:** crie um PostgreSQL gratuito no [Neon](https://neon.tech)
+2. **Backend:** novo projeto Vercel, root dir `backend`; variáveis de ambiente: `NODE_ENV=production`, `DATABASE_URL`, `DB_SSL=true`, `DB_SYNCHRONIZE=false`, `JWT_SECRET`, `JWT_EXPIRES_IN=7d`, `FRONTEND_URL` (URL do frontend)
+3. **Frontend:** novo projeto Vercel, root dir `frontend`; variável: `VITE_API_URL=https://<api>.vercel.app/api`
+4. Após o deploy do frontend, atualize `FRONTEND_URL` no backend e redeploy
 
-O app estará disponível em `http://localhost:5173`.
-
-> O Vite proxy encaminha `/api` para `http://localhost:3000`, logo nenhuma configuração extra de CORS é necessária em desenvolvimento.
+> 🔗 **Link do deploy:** *(preencher após deploy)*
 
 ---
 
-## Executar Testes
+## Credenciais seed
 
-```bash
-cd backend
-npm test
-```
-
-O projeto conta com **24 testes unitários** em 4 suites:
-
-| Suite | Testes |
+| Campo | Valor |
 |---|---|
-| `AuthService` | login com sucesso, usuário inexistente, senha inválida, registro, logout |
-| `CategoriesService` | create, findAll, findOne (sucesso / não encontrado / proibido), update, remove |
-| `TransactionsService` | create, findAll (sem filtros / com filtros), findOne (sucesso / não encontrado / proibido), update, remove |
-| `DashboardService` | saldo zerado, cálculo de saldo, top categorias por despesa |
+| E-mail | `admin@fintech.com` |
+| Senha | `senha123` |
 
 ---
 
-## Variáveis de Ambiente — Referência Completa
+## Testes
 
-| Variável | Padrão | Descrição |
-|---|---|---|
-| `PORT` | `3000` | Porta da API |
-| `NODE_ENV` | `development` | Ambiente (`production` habilita HTTPS no cookie) |
-| `DATABASE_URL` | — | Connection string PostgreSQL |
-| `DB_SSL` | `false` | Habilitar SSL na conexão com o banco |
-| `DB_SYNCHRONIZE` | `false` | **Não use `true` em produção** |
-| `JWT_SECRET` | — | Segredo para assinar os JWTs |
-| `JWT_EXPIRES_IN` | `7d` | Validade do token |
-| `FRONTEND_URL` | `http://localhost:5173` | Origem permitida pelo CORS |
+```bash
+cd backend && npm test
+```
 
----
+**25 testes unitários** em 4 suites:
 
-## Arquitetura de Segurança
-
-- **Token JWT armazenado em cookie `HttpOnly`** — inacessível ao JavaScript, proteção contra XSS.
-- **`sameSite: strict`** — proteção contra CSRF.
-- **Senha nunca retorna na API** — campo decorado com `@Exclude()` via `ClassSerializerInterceptor`.
-- **Migrations-only** — `DB_SYNCHRONIZE=false`, sem sync automático em produção.
+| Suite | Cobertura |
+|---|---|
+| `AuthService` | login, usuário inexistente, senha inválida, registro, logout |
+| `CategoriesService` | create, findAll, findOne (sucesso / 404 / 403), update, remove |
+| `TransactionsService` | create, findAll (sem filtros / com filtros), findOne (sucesso / 404 / 403), update, remove |
+| `DashboardService` | saldo zerado, cálculo de saldo, top categorias, despesas sem categoria, histórico só receitas |
 
 ---
 
-## Stack Técnica
+## Validações e Regras de Negócio
 
 ### Backend
-- NestJS 10 · TypeScript strict  
-- TypeORM 0.3 · migrations  
-- PostgreSQL 18 (uuid-ossp)  
-- Passport-JWT + cookie-parser  
-- class-validator + class-transformer  
-- Jest 29 + ts-jest
+- Todas as mensagens de erro dos DTOs estão **em português** via `class-validator`
+- **Categorias:** nome único por usuário (case-insensitive) → `409 Conflict`; acesso isolado por usuário → `403 Forbidden`
+- **Transações:** filtros combinados (tipo, categoria, período); paginação (padrão 20, máx. 100)
+- **Dashboard:** transações sem categoria agrupadas como **"Sem categoria"** (não ignoradas); percentual calculado sobre o total de despesas
 
 ### Frontend
-- React 18 · Vite · TypeScript strict  
-- Material UI v7  
-- TanStack Query v5  
-- Zustand (persist)  
-- Axios (`withCredentials: true`)  
-- React Router v6 · React Hook Form
+- **Categorias:** duplicidade detectada antes de chamar a API (case-insensitive); ao editar, a própria categoria é excluída da comparação
+- **Filtros de período:** data final não pode ser anterior à inicial — erro visual imediato, botão desabilitado e atributo `min` no input nativo
+- **Transações:** campo Valor com **máscara BRL** (`12345` → `R$ 123,45`); ao criar transação com mesmo valor e data de uma já existente, exibe **modal de confirmação**
+- **UX:** "Sem categoria" exibido em negrito; snackbars de feedback em todas as operações CRUD; botões bloqueados durante requisições
 
 ---
 
-## Scripts Úteis
+## Segurança
+
+- JWT em cookie `HttpOnly` — inacessível ao JavaScript (proteção XSS)
+- `sameSite: strict` em dev, `sameSite: none` + `secure: true` em produção
+- Senha nunca retorna na API (`@Exclude()` + `ClassSerializerInterceptor`)
+- `DB_SYNCHRONIZE=false` em produção — schema gerenciado exclusivamente por migrations
+
+---
+
+## Decisões Técnicas
+
+### Backend
+
+| Lib | Alternativa | Motivo |
+|---|---|---|
+| **TypeORM** | Prisma | Integração nativa com NestJS (`autoLoadEntities`, decorators consistentes); Prisma exige schema separado |
+| **passport-jwt** | JWT manual | Padrão oficial do NestJS; Guards e Strategies reconhecidos por qualquer dev da stack |
+| **bcrypt** | argon2 | Universal, sem binários nativos problemáticos em ambientes serverless (Vercel) |
+| **joi** | zod | Integração direta com `ConfigModule.forRoot({ validationSchema })` do NestJS |
+| **class-validator** | zod | Decorators nos DTOs integram com `ValidationPipe` global; tipagem declarativa |
+
+### Frontend
+
+| Lib | Alternativa | Motivo |
+|---|---|---|
+| **TanStack Query** | SWR / RTK Query | Melhor controle de cache, mutations e invalidação sem boilerplate |
+| **Zustand** | Context API / Redux | Zero boilerplate para estado de auth persistido; Context causa re-renders desnecessários |
+| **Material UI v7** | Tailwind | Componentes prontos (Table, Dialog, Snackbar) aceleram entrega sem sacrificar funcionalidade |
+| **React Hook Form** | Formik | Usa refs em vez de state — menos re-renders; facilita máscara BRL via `Controller` |
+| **Axios** | Fetch | Interceptors nativos centralizam `withCredentials: true` e tratamento de erros |
+| **Vite** | CRA | CRA descontinuado; Vite tem HMR instantâneo e build significativamente mais rápido |
+
+---
+
+## Scripts úteis
 
 ```bash
 # Backend
-npm run start:dev          # modo desenvolvimento com hot-reload
-npm run build              # compilar para produção
-npm run migration:generate -- src/database/migrations/<Nome>
+npm run start:dev
 npm run migration:run
 npm run migration:revert
-npm test                   # testes unitários
-npm run test:cov           # relatório de cobertura
+npm test
+npm run test:cov
 
 # Frontend
-npm run dev                # servidor de desenvolvimento
-npm run build              # build de produção
-npm run preview            # visualizar build de produção
+npm run dev
+npm run build
 ```
 
 ---

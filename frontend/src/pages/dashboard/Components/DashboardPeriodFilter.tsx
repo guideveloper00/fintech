@@ -1,6 +1,6 @@
 import { Box, Button, Paper, TextField, Typography } from '@mui/material';
 import { FilterAlt as FilterIcon, Clear as ClearIcon } from '@mui/icons-material';
-import type { DashboardPeriodFilterProps } from './types';
+import type { DashboardPeriodFilterProps } from '../types';
 
 export default function DashboardPeriodFilter({
   startDate,
@@ -10,6 +10,8 @@ export default function DashboardPeriodFilter({
   onApply,
   onClear,
 }: DashboardPeriodFilterProps) {
+  const dateError = !!startDate && !!endDate && endDate < startDate;
+
   return (
     <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
       <Box
@@ -36,7 +38,12 @@ export default function DashboardPeriodFilter({
           size="small"
           value={endDate}
           onChange={(e) => onEndChange(e.target.value)}
-          slotProps={{ inputLabel: { shrink: true } }}
+          slotProps={{
+            inputLabel: { shrink: true },
+            htmlInput: { min: startDate || undefined },
+          }}
+          error={dateError}
+          helperText={dateError ? 'Deve ser após a data inicial' : undefined}
           sx={{ width: 180 }}
         />
         <Button
@@ -44,7 +51,7 @@ export default function DashboardPeriodFilter({
           size="small"
           startIcon={<FilterIcon />}
           onClick={onApply}
-          disabled={!startDate && !endDate}
+          disabled={(!startDate && !endDate) || dateError}
         >
           Aplicar
         </Button>

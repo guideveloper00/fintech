@@ -22,6 +22,9 @@ export class User {
   @Exclude() // nunca retorna o hash nas respostas JSON
   password: string;
 
+  @Column({ type: 'text', nullable: true, name: 'avatar_url' })
+  avatarUrl: string | null;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

@@ -13,7 +13,7 @@ import {
   Typography,
 } from '@mui/material';
 import { FilterAlt as FilterIcon, FilterAltOff as ClearFilterIcon } from '@mui/icons-material';
-import type { TransactionsFiltersProps } from './types';
+import type { TransactionsFiltersProps } from '../types';
 
 export default function TransactionsFilters({
   localType,
@@ -29,6 +29,8 @@ export default function TransactionsFilters({
   onApply,
   onClear,
 }: TransactionsFiltersProps) {
+  const dateError = !!localStart && !!localEnd && localEnd < localStart;
+
   return (
     <Paper
       elevation={0}
@@ -87,11 +89,14 @@ export default function TransactionsFilters({
           value={localEnd}
           onChange={(e) => onEndChange(e.target.value)}
           InputLabelProps={{ shrink: true }}
+          inputProps={{ min: localStart || undefined }}
+          error={dateError}
+          helperText={dateError ? 'Deve ser após a data inicial' : undefined}
           sx={{ minWidth: 150 }}
         />
 
         <Stack direction="row" spacing={1} alignItems="center">
-          <Button variant="contained" size="small" onClick={onApply}>
+          <Button variant="contained" size="small" onClick={onApply} disabled={dateError}>
             Filtrar
           </Button>
           {hasActiveFilters && (

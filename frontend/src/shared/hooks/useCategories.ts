@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { categoriesService } from '../services/categories.service';
 import type { CreateCategoryPayload, UpdateCategoryPayload } from '../types';
+import { categoriesService } from '@/services/categories.service';
 
 export const CATEGORIES_QUERY_KEY = ['categories'] as const;
 

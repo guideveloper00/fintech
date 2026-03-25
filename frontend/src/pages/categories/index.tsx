@@ -7,30 +7,26 @@ import {
   Typography,
 } from '@mui/material';
 import { Add } from '@mui/icons-material';
-import {
-  useCategories,
-  useCreateCategory,
-  useUpdateCategory,
-  useDeleteCategory,
-} from '../../hooks/useCategories';
+
 import { extractErrorMessage } from '../../lib/extractErrorMessage';
-import type { Category } from '../../types';
+import type { Category } from '../../shared/types';
 import type { CategoryFormData, SnackbarState } from './types';
-import CategoriesTable from './CategoriesTable';
-import CategoryFormDialog from './CategoryFormDialog';
-import ConfirmDeleteDialog from './ConfirmDeleteDialog';
+import CategoriesTable from './Components/CategoriesTable';
+import CategoryFormDialog from './Components/CategoryFormDialog';
+import ConfirmDeleteDialog from './Components/ConfirmDeleteDialog';
+import { useCategories, useCreateCategory, useDeleteCategory, useUpdateCategory } from '@/shared/hooks/useCategories';
 
 export default function CategoriesPage() {
   const { data: categories = [], isLoading } = useCategories();
 
-  // Form dialog
+  // Dialog de formulário
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
 
-  // Delete dialog
+  // Dialog de exclusão
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
 
-  // Snackbar
+  // Snackbar de feedback
   const [snackbar, setSnackbar] = useState<SnackbarState>({
     open: false,
     message: '',
@@ -120,7 +116,7 @@ export default function CategoriesPage() {
 
   return (
     <Box>
-      {/* Header */}
+      {/* Cabeçalho */}
       <Box display="flex" alignItems="center" justifyContent="space-between" mb={4}>
         <Box>
           <Typography variant="h4" fontWeight={700} gutterBottom>
@@ -135,7 +131,7 @@ export default function CategoriesPage() {
         </Button>
       </Box>
 
-      {/* Table */}
+      {/* Tabela */}
       <CategoriesTable
         categories={categories}
         isLoading={isLoading}
@@ -143,16 +139,19 @@ export default function CategoriesPage() {
         onDelete={openDelete}
       />
 
-      {/* Form dialog (create / edit) */}
+      {/* Dialog de formulário (criar / editar) */}
       <CategoryFormDialog
         open={formOpen}
         onClose={closeForm}
         onSubmit={handleFormSubmit}
         editing={editing}
         isPending={isSaving}
+        existingNames={categories
+          .filter((c) => c.id !== editing?.id)
+          .map((c) => c.name)}
       />
 
-      {/* Delete confirmation dialog */}
+      {/* Dialog de confirmação de exclusão */}
       <ConfirmDeleteDialog
         open={!!deleteTarget}
         onClose={closeDelete}
@@ -161,7 +160,7 @@ export default function CategoriesPage() {
         isPending={deleteMutation.isPending}
       />
 
-      {/* Feedback snackbar */}
+      {/* Snackbar de feedback */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3500}
