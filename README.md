@@ -53,7 +53,7 @@ npm run migration:run
 # 4. Criar usuário seed (admin@fintech.com / senha123) + categorias de exemplo
 npm run seed
 
-# 4. Iniciar servidores (terminais separados)
+# 5. Iniciar servidores (terminais separados)
 npm run start:dev             # API em http://localhost:3000/api
 cd ../frontend && npm run dev  # SPA em http://localhost:5173
 ```

@@ -5,6 +5,8 @@
 import 'reflect-metadata';
 import * as bcrypt from 'bcrypt';
 import { AppDataSource } from './data-source';
+import { User } from '../users/entities/user.entity';
+import { Category } from '../categories/entities/category.entity';
 
 const SEED_EMAIL = 'admin@fintech.com';
 const SEED_PASSWORD = 'senha123';
@@ -13,7 +15,7 @@ const SEED_NAME = 'Admin';
 async function seed(): Promise<void> {
   await AppDataSource.initialize();
 
-  const userRepo = AppDataSource.getRepository('users');
+  const userRepo = AppDataSource.getRepository(User);
 
   const existing = await userRepo.findOne({ where: { email: SEED_EMAIL } });
 
@@ -27,10 +29,10 @@ async function seed(): Promise<void> {
       password: hashed,
     });
     const saved = await userRepo.save(user);
-    console.log(`Seed: usuário criado — id: ${(saved as { id: string }).id}`);
+    console.log(`Seed: usuário criado — id: ${saved.id}`);
 
     // Cria categorias de exemplo vinculadas ao usuário seed
-    const categoryRepo = AppDataSource.getRepository('categories');
+    const categoryRepo = AppDataSource.getRepository(Category);
     const sampleCategories = [
       'Alimentação',
       'Transporte',
@@ -40,7 +42,7 @@ async function seed(): Promise<void> {
     ];
     for (const name of sampleCategories) {
       await categoryRepo.save(
-        categoryRepo.create({ name, userId: (saved as { id: string }).id }),
+        categoryRepo.create({ name, userId: saved.id }),
       );
     }
     console.log(`Seed: ${sampleCategories.length} categorias criadas.`);
