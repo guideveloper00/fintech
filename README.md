@@ -50,7 +50,7 @@ cd backend && cp .env.example .env   # edite com suas credenciais
 # No PostgreSQL: CREATE DATABASE fintech_db;
 npm run migration:run
 
-# 4. Criar usuário seed (admin@fintech.com / senha123) + categorias de exemplo
+# 4. Criar usuário seed (admin@fintech.com / senha123) + 10 categorias + 34 transações de exemplo
 npm run seed
 
 # 5. Iniciar servidores (terminais separados)
@@ -115,12 +115,9 @@ Migrations rodam automaticamente na inicialização.
 > O `frontend/Dockerfile` **não é usado** pelo Vercel — ele existe apenas para o `docker-compose` local e deploys em VPS. O Vercel usa seu próprio pipeline: detecta o Vite, roda `npm run build` e serve os estáticos via CDN.
 
 1. Importe o repo no [vercel.com](https://vercel.com), root dir `frontend`
-2. Adicione a variável de ambiente:
-
-| Variável | Valor |
-|----------|-------|
-| `VITE_API_URL` | `https://<sua-api>.railway.app/api` |
-
+2. **Não adicione** a variável `VITE_API_URL` no dashboard do Vercel.
+   O `frontend/vercel.json` já contém uma rewrite que proxia `/api/*` → Railway server-side.
+   Isso faz o cookie ser **same-origin** (sem cross-site), resolvendo o bloqueio de cookie no Safari/iOS.
 3. Deploy. Após obter a URL do frontend, volte ao Railway e atualize `FRONTEND_URL` no backend → redeploy automático.
 
 > 🔗 **API:** https://fintech-back-production.up.railway.app/api  
@@ -205,7 +202,7 @@ O mesmo endpoint é reutilizado pelos dropdowns de transações — nesse caso o
 ## Segurança
 
 - JWT em cookie `HttpOnly` — inacessível ao JavaScript (proteção XSS)
-- `sameSite: strict` em dev, `sameSite: none` + `secure: true` em produção
+- `sameSite: strict` em dev; em produção o cookie é **same-origin** graças ao proxy `vercel.json` → Railway, evitando bloqueio de cookie cross-site no Safari/iOS
 - Senha nunca retorna na API (`@Exclude()` + `ClassSerializerInterceptor`)
 - `DB_SYNCHRONIZE=false` em produção — schema gerenciado exclusivamente por migrations
 
