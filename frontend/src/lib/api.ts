@@ -19,19 +19,25 @@ api.interceptors.response.use(
   (error: AxiosError<ApiErrorResponse>) => {
     const requestUrl = error.config?.url ?? '';
 
-    // Endpoints que nunca devem disparar o logout automático:
-    // - /auth/login e /auth/register: credenciais erradas, não sessão expirada
-    // - /auth/me: verificação silenciosa de sessão — se falhar, o Zustand
-    //   já mantém o estado correto; logout aqui causaria flash em browsers
-    //   que bloqueiam cookies cross-site (Safari ITP, modo incógnito)
+    // Endpoints de auth nunca disparam logout automático
     const skipAutoLogout =
       requestUrl.includes('/auth/login') ||
       requestUrl.includes('/auth/register') ||
       requestUrl.includes('/auth/me');
 
     if (error.response?.status === 401 && !skipAutoLogout) {
-      useAuthStore.getState().logout();
-      window.location.href = '/login';
+      const { loginTimestamp } = useAuthStore.getState();
+      const secondsSinceLogin = loginTimestamp
+        ? (Date.now() - loginTimestamp) / 1000
+        : Infinity;
+
+      // Ignora 401s nos primeiros 15 segundos após login — evita race condition
+      // onde queries do load inicial disparam antes do cookie se propagar,
+      // especialmente em conexões lentas ou cold starts do Railway
+      if (secondsSinceLogin > 15) {
+        useAuthStore.getState().logout();
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   },
