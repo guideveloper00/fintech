@@ -3,6 +3,9 @@
 > Desafio técnico sênior · Teck Soluções  
 > Stack: **NestJS 10 · React 18 · TypeScript · PostgreSQL**
 
+🔗 **Repositório:** https://github.com/guideveloper00/fintech  
+🔗 **Deploy:** https://fintech-gt.vercel.app
+
 Aplicação full-stack para gestão financeira corporativa com autenticação via **JWT em cookie HttpOnly**.
 
 > **Destaque de implementação:** paginação e ordenação de ambas as tabelas (Transações **e** Categorias) são processadas inteiramente no banco de dados — parâmetros `page`, `limit`, `sortBy` e `sortOrder` trafegam na query string, o backend aplica `OFFSET/LIMIT` e `ORDER BY` via TypeORM QueryBuilder e devolve `{ items, total, page, limit, totalPages }`. O frontend nunca ordena ou fatia arrays em memória.
@@ -90,38 +93,11 @@ Migrations rodam automaticamente na inicialização.
 
 ## Deploy
 
-### Backend + Banco — Railway (recomendado para NestJS)
-
-1. Crie conta em [railway.app](https://railway.app)
-2. **New Project → Deploy from GitHub** → selecione o repo, root dir `backend`
-   > Railway detecta o `backend/Dockerfile` automaticamente e o utiliza para buildar o container — não é necessário configurar nada extra.
-3. Dentro do projeto, clique em **Add Service → Database → PostgreSQL** — Railway provisiona e injeta `DATABASE_URL` automaticamente
-4. Configure as variáveis de ambiente no serviço do backend:
-
-| Variável | Valor |
-|----------|-------|
-| `NODE_ENV` | `production` |
-| `DATABASE_URL` | *(injetado automaticamente pelo Railway)* |
-| `DB_SSL` | `true` |
-| `DB_SYNCHRONIZE` | `false` |
-| `JWT_SECRET` | *(string aleatória segura)* |
-| `JWT_EXPIRES_IN` | `7d` |
-| `FRONTEND_URL` | URL do frontend (preencher após o deploy do front) |
-
-5. Railway detecta o `Dockerfile` na pasta `backend` e faz o build automaticamente. As migrations rodam no `CMD` do container.
-
-### Frontend — Vercel
-
-> O `frontend/Dockerfile` **não é usado** pelo Vercel — ele existe apenas para o `docker-compose` local e deploys em VPS. O Vercel usa seu próprio pipeline: detecta o Vite, roda `npm run build` e serve os estáticos via CDN.
-
-1. Importe o repo no [vercel.com](https://vercel.com), root dir `frontend`
-2. **Não adicione** a variável `VITE_API_URL` no dashboard do Vercel.
-   O `frontend/vercel.json` já contém uma rewrite que proxia `/api/*` → Railway server-side.
-   Isso faz o cookie ser **same-origin** (sem cross-site), resolvendo o bloqueio de cookie no Safari/iOS.
-3. Deploy. Após obter a URL do frontend, volte ao Railway e atualize `FRONTEND_URL` no backend → redeploy automático.
-
+> 🔗 **Frontend:** https://fintech-gt.vercel.app  
 > 🔗 **API:** https://fintech-back-production.up.railway.app/api  
-> 🔗 **Frontend:** https://fintech-gt.vercel.app
+> 🔗 **Repositório:** https://github.com/guideveloper00/fintech
+
+Backend hospedado no **Railway** (NestJS + PostgreSQL), frontend no **Vercel** (Vite/React).
 
 ---
 
@@ -225,7 +201,7 @@ O mesmo endpoint é reutilizado pelos dropdowns de transações — nesse caso o
 | Lib | Alternativa | Motivo |
 |-----|-------------|--------|
 | **TanStack Query** | SWR / RTK Query | Melhor controle de cache, mutations e invalidação sem boilerplate |
-| **Zustand** | Context API / Redux | Zero boilerplate para estado de auth persistido; Context causa re-renders desnecessários |
+| **Zustand** | Context API / Redux | Escolha central da arquitetura de estado: o `useAuthStore` persiste sessão no `localStorage` via middleware `persist`, sobrevive a reloads e inicializa sincronamente (sem flash de tela de login). Context API causaria re-renders em toda a árvore a cada mudança de auth; Redux exigiria boilerplate desproporcional para um único slice de estado global. Zustand resolve tudo isso com ~40 linhas. |
 | **Material UI v7** | Tailwind | Componentes prontos (Table, Dialog, Snackbar) aceleram entrega sem sacrificar funcionalidade |
 | **React Hook Form** | Formik | Usa refs em vez de state — menos re-renders; facilita máscara BRL via `Controller` |
 | **Axios** | Fetch | Interceptors nativos centralizam `withCredentials: true` e tratamento de erros |
