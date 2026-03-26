@@ -19,11 +19,16 @@ export function useCurrentUser() {
 export function useLogin() {
   const { setAuth } = useAuthStore();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (payload: LoginPayload) => authService.login(payload),
     onSuccess: (user) => {
       setAuth(user);
+      // Pré-popula o cache de /auth/me para que useCurrentUser não precise
+      // fazer uma requisição imediata — evita 401 em browsers que bloqueiam
+      // cookies cross-site (Safari ITP, modo incógnito com 3rd-party cookies bloqueados)
+      queryClient.setQueryData(AUTH_QUERY_KEY, user);
       navigate('/', { replace: true });
     },
   });
@@ -32,11 +37,13 @@ export function useLogin() {
 export function useRegister() {
   const { setAuth } = useAuthStore();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (payload: RegisterPayload) => authService.register(payload),
     onSuccess: (user) => {
       setAuth(user);
+      queryClient.setQueryData(AUTH_QUERY_KEY, user);
       navigate('/', { replace: true });
     },
   });
