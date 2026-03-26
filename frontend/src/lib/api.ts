@@ -19,26 +19,17 @@ api.interceptors.response.use(
   (error: AxiosError<ApiErrorResponse>) => {
     const requestUrl = error.config?.url ?? '';
 
-    // Endpoints de auth nunca disparam logout automático
-    const skipAutoLogout =
-      requestUrl.includes('/auth/login') ||
-      requestUrl.includes('/auth/register') ||
-      requestUrl.includes('/auth/me');
+    // Apenas /auth/me dispara logout automático — ele é o único endpoint
+    // dedicado a verificar sessão. 401s em dashboard/transactions/categories
+    // podem ser transientes (cookie cross-origin no mobile, cold start do Railway)
+    // e não devem forçar logout; o TanStack Query já exibe o erro na tela.
+    const isSessionCheck = requestUrl.includes('/auth/me');
 
-    if (error.response?.status === 401 && !skipAutoLogout) {
-      const { loginTimestamp } = useAuthStore.getState();
-      const secondsSinceLogin = loginTimestamp
-        ? (Date.now() - loginTimestamp) / 1000
-        : Infinity;
-
-      // Ignora 401s nos primeiros 15 segundos após login — evita race condition
-      // onde queries do load inicial disparam antes do cookie se propagar,
-      // especialmente em conexões lentas ou cold starts do Railway
-      if (secondsSinceLogin > 15) {
-        useAuthStore.getState().logout();
-        window.location.href = '/login';
-      }
+    if (error.response?.status === 401 && isSessionCheck) {
+      useAuthStore.getState().logout();
+      window.location.href = '/login';
     }
+
     return Promise.reject(error);
   },
 );
