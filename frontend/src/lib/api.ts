@@ -17,17 +17,29 @@ export const api = axios.create({
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError<ApiErrorResponse>) => {
-    const requestUrl = error.config?.url ?? '';
+    if (error.response?.status === 401) {
+      const requestUrl = error.config?.url ?? '';
 
-    // Apenas /auth/me dispara logout automático — ele é o único endpoint
-    // dedicado a verificar sessão. 401s em dashboard/transactions/categories
-    // podem ser transientes (cookie cross-origin no mobile, cold start do Railway)
-    // e não devem forçar logout; o TanStack Query já exibe o erro na tela.
-    const isSessionCheck = requestUrl.includes('/auth/me');
+      // 401 em login/register = credenciais erradas, nunca é expiração de sessão
+      const isAuthAttempt =
+        requestUrl.includes('/auth/login') ||
+        requestUrl.includes('/auth/register');
 
-    if (error.response?.status === 401 && isSessionCheck) {
-      useAuthStore.getState().logout();
-      window.location.href = '/login';
+      if (!isAuthAttempt) {
+        const { loginTimestamp } = useAuthStore.getState();
+        const secondsSinceLogin = loginTimestamp
+          ? (Date.now() - loginTimestamp) / 1000
+          : Infinity;
+
+        // Grace period de 60s após login:
+        //   - Cobre cold start do Railway (~30s)
+        //   - Cobre propagação de cookie cross-origin no Safari ITP / mobile
+        //   - Sessão genuinamente expirada (horas de uso) → secondsSinceLogin >> 60 → desloga ✓
+        if (secondsSinceLogin > 60) {
+          useAuthStore.getState().logout();
+          window.location.href = '/login';
+        }
+      }
     }
 
     return Promise.reject(error);
