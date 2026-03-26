@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "fintech - NestJS",
   "author": "Guilherme Gonçalves",
-  "private": true,
   "license": "MIT",
   "scripts": {
     "build": "nest build",

@@ -1,6 +1,7 @@
 {
   "name": "fintech-expenses-challenge",
   "version": "1.0.0",
+  "author": "Guilherme Gonçalves",
   "license": "MIT",
   "description": "Gestão Financeira Corporativa — NestJS + React.js",
   "scripts": {

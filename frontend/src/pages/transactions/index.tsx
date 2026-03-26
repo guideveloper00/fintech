@@ -9,12 +9,13 @@ import ConfirmDeleteDialog from './Components/ConfirmDeleteDialog';
 import { useDeleteTransaction, useTransactions } from '@/shared/hooks/useTransactions';
 import { useCategories } from '@/shared/hooks/useCategories';
 
-const EMPTY_FILTERS: TransactionFilters = { page: 1, limit: 10 };
+const EMPTY_FILTERS: TransactionFilters = { page: 1, limit: 10, sortBy: 'date', sortOrder: 'desc' };
 
 export default function TransactionsPage() {
   const [filters, setFilters] = useState<TransactionFilters>(EMPTY_FILTERS);
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Transaction | null>(null);
+  const [copying, setCopying] = useState<Transaction | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Transaction | null>(null);
 
   // Filtros locais (antes de aplicar)
@@ -32,14 +33,26 @@ export default function TransactionsPage() {
 
   const applyFilters = () => {
     if (localStart && localEnd && localEnd < localStart) return;
-    setFilters({
+    // Preserva o sort atual ao aplicar filtros
+    setFilters((f) => ({
       page: 1,
       limit: 10,
+      sortBy: f.sortBy,
+      sortOrder: f.sortOrder,
       type: (localType as TransactionFilters['type']) || undefined,
       categoryId: localCategory || undefined,
       startDate: localStart || undefined,
       endDate: localEnd || undefined,
-    });
+    }));
+  };
+
+  const handleSort = (key: TransactionFilters['sortBy']) => {
+    setFilters((f) => ({
+      ...f,
+      page: 1,
+      sortBy: key,
+      sortOrder: f.sortBy === key ? (f.sortOrder === 'asc' ? 'desc' : 'asc') : 'asc',
+    }));
   };
 
   const clearFilters = () => {
@@ -52,11 +65,19 @@ export default function TransactionsPage() {
 
   const openCreate = () => {
     setEditing(null);
+    setCopying(null);
     setFormOpen(true);
   };
 
   const openEdit = (t: Transaction) => {
     setEditing(t);
+    setCopying(null);
+    setFormOpen(true);
+  };
+
+  const openCopy = (t: Transaction) => {
+    setEditing(null);
+    setCopying(t);
     setFormOpen(true);
   };
 
@@ -108,15 +129,20 @@ export default function TransactionsPage() {
         isLoading={isLoading}
         totalPages={data?.totalPages ?? 1}
         currentPage={filters.page ?? 1}
+        sortBy={filters.sortBy ?? 'date'}
+        sortOrder={filters.sortOrder ?? 'desc'}
         onPageChange={(page) => setFilters((f) => ({ ...f, page }))}
+        onSort={(key) => handleSort(key as TransactionFilters['sortBy'])}
         onEdit={openEdit}
         onDelete={setDeleteTarget}
+        onCopy={openCopy}
       />
 
       <TransactionFormDialog
         open={formOpen}
         editing={editing}
-        onClose={() => setFormOpen(false)}
+        copyOf={copying}
+        onClose={() => { setFormOpen(false); setCopying(null); }}
         existingTransactions={data?.items ?? []}
       />
 

@@ -1,4 +1,4 @@
-import type { Category } from '../../../shared/types';
+import type { Category, CategorySortBy } from '../../../shared/types';
 
 // ─── CategoryFormDialog ───────────────────────────────────────────────────────
 
@@ -13,16 +13,24 @@ export interface CategoryFormDialogProps {
   onSubmit: (payload: CategoryFormData) => void;
   editing?: Category | null;
   isPending: boolean;
-  existingNames: string[];
 }
 
 // ─── CategoriesTable ─────────────────────────────────────────────────────────
 
+export type SortDir = 'asc' | 'desc';
+
 export interface CategoriesTableProps {
-  categories: Category[];
+  items: Category[];
   isLoading: boolean;
+  total: number;
+  totalPages: number;
+  currentPage: number;
+  sortBy: CategorySortBy;
+  sortOrder: SortDir;
   onEdit: (category: Category) => void;
   onDelete: (category: Category) => void;
+  onPageChange: (page: number) => void;
+  onSort: (key: CategorySortBy) => void;
 }
 
 // ─── ConfirmDeleteDialog ──────────────────────────────────────────────────────

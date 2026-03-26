@@ -1,9 +1,26 @@
 import { api } from '../lib/api';
-import type { Category, CreateCategoryPayload, UpdateCategoryPayload } from '../shared/types';
+import type {
+  Category,
+  CategoryFilters,
+  CreateCategoryPayload,
+  PaginatedData,
+  UpdateCategoryPayload,
+} from '../shared/types';
 
 export const categoriesService = {
+  /** Retorna todas as categorias do usuário (sem paginação) — usado para dropdowns. */
   async findAll(): Promise<Category[]> {
-    const res = await api.get<{ data: Category[] }>('/categories');
+    const res = await api.get<{ data: PaginatedData<Category> }>('/categories', {
+      params: { limit: 500, sortBy: 'name', sortOrder: 'asc' },
+    });
+    return res.data.data.items;
+  },
+
+  /** Retorna uma página paginada e ordenada de categorias — usado na tabela. */
+  async findPaginated(filters: CategoryFilters = {}): Promise<PaginatedData<Category>> {
+    const res = await api.get<{ data: PaginatedData<Category> }>('/categories', {
+      params: filters,
+    });
     return res.data.data;
   },
 

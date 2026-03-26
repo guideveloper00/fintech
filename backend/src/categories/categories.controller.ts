@@ -10,10 +10,12 @@ import {
   ParseUUIDPipe,
   HttpCode,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { QueryCategoryDto } from './dto/query-category.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { User } from '../users/entities/user.entity';
@@ -29,8 +31,8 @@ export class CategoriesController {
   }
 
   @Get()
-  findAll(@CurrentUser() user: User) {
-    return this.categoriesService.findAll(user.id);
+  findAll(@CurrentUser() user: User, @Query() query: QueryCategoryDto) {
+    return this.categoriesService.findAll(user.id, query);
   }
 
   @Get(':id')

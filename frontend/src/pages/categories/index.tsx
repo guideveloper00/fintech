@@ -9,15 +9,33 @@ import {
 import { Add } from '@mui/icons-material';
 
 import { extractErrorMessage } from '../../lib/extractErrorMessage';
-import type { Category } from '../../shared/types';
+import type { Category, CategoryFilters, CategorySortBy } from '../../shared/types';
 import type { CategoryFormData, SnackbarState } from './types';
 import CategoriesTable from './Components/CategoriesTable';
 import CategoryFormDialog from './Components/CategoryFormDialog';
 import ConfirmDeleteDialog from './Components/ConfirmDeleteDialog';
-import { useCategories, useCreateCategory, useDeleteCategory, useUpdateCategory } from '@/shared/hooks/useCategories';
+import {
+  useCategoriesPaginated,
+  useCreateCategory,
+  useDeleteCategory,
+  useUpdateCategory,
+} from '@/shared/hooks/useCategories';
+
+const DEFAULT_FILTERS: CategoryFilters = {
+  page: 1,
+  limit: 20,
+  sortBy: 'createdAt',
+  sortOrder: 'desc',
+};
 
 export default function CategoriesPage() {
-  const { data: categories = [], isLoading } = useCategories();
+  const [filters, setFilters] = useState<CategoryFilters>(DEFAULT_FILTERS);
+
+  const { data, isLoading } = useCategoriesPaginated(filters);
+
+  const items = data?.items ?? [];
+  const totalPages = data?.totalPages ?? 1;
+  const currentPage = data?.page ?? 1;
 
   // Dialog de formulário
   const [formOpen, setFormOpen] = useState(false);
@@ -50,6 +68,19 @@ export default function CategoriesPage() {
   function closeForm() {
     setFormOpen(false);
     setEditing(null);
+  }
+
+  function handleSort(key: CategorySortBy) {
+    setFilters((f) => ({
+      ...f,
+      page: 1,
+      sortBy: key,
+      sortOrder: f.sortBy === key && f.sortOrder === 'asc' ? 'desc' : 'asc',
+    }));
+  }
+
+  function handlePageChange(page: number) {
+    setFilters((f) => ({ ...f, page }));
   }
 
   function handleFormSubmit(payload: CategoryFormData) {
@@ -133,10 +164,17 @@ export default function CategoriesPage() {
 
       {/* Tabela */}
       <CategoriesTable
-        categories={categories}
+        items={items}
         isLoading={isLoading}
+        total={data?.total ?? 0}
+        totalPages={totalPages}
+        currentPage={currentPage}
+        sortBy={filters.sortBy ?? 'createdAt'}
+        sortOrder={filters.sortOrder ?? 'desc'}
         onEdit={openEdit}
         onDelete={openDelete}
+        onPageChange={handlePageChange}
+        onSort={handleSort}
       />
 
       {/* Dialog de formulário (criar / editar) */}
@@ -146,9 +184,6 @@ export default function CategoriesPage() {
         onSubmit={handleFormSubmit}
         editing={editing}
         isPending={isSaving}
-        existingNames={categories
-          .filter((c) => c.id !== editing?.id)
-          .map((c) => c.name)}
       />
 
       {/* Dialog de confirmação de exclusão */}

@@ -26,6 +26,7 @@ import { useCategories } from '@/shared/hooks/useCategories';
 interface TransactionFormDialogProps {
   open: boolean;
   editing: Transaction | null;
+  copyOf?: Transaction | null;
   onClose: () => void;
   existingTransactions?: Transaction[];
 }
@@ -35,6 +36,7 @@ type FormValues = Omit<CreateTransactionPayload, 'amount'> & { amount: number | 
 export default function TransactionFormDialog({
   open,
   editing,
+  copyOf,
   onClose,
   existingTransactions = [],
 }: TransactionFormDialogProps) {
@@ -65,12 +67,22 @@ export default function TransactionFormDialog({
     if (open) {
       setMutationError(null);
       if (editing) {
+        // Modo edição: preenche com os dados da transação existente
         reset({
           description: editing.description,
           amount: editing.amount,
           type: editing.type,
           date: editing.date,
           categoryId: editing.categoryId ?? '',
+        });
+      } else if (copyOf) {
+        // Modo cópia: preenche como nova transação usando os dados da original como base
+        reset({
+          description: copyOf.description,
+          amount: copyOf.amount,
+          type: copyOf.type,
+          date: new Date().toISOString().slice(0, 10),
+          categoryId: copyOf.categoryId ?? '',
         });
       } else {
         reset({
@@ -82,7 +94,7 @@ export default function TransactionFormDialog({
         } as FormValues);
       }
     }
-  }, [open, editing, reset]);
+  }, [open, editing, copyOf, reset]);
 
   const onSubmit = (data: FormValues) => {
     const payload = {
@@ -121,7 +133,7 @@ export default function TransactionFormDialog({
   return (
     <>
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{editing ? 'Editar transação' : 'Nova transação'}</DialogTitle>
+      <DialogTitle>{editing ? 'Editar transação' : copyOf ? 'Nova transação (baseada em cópia)' : 'Nova transação'}</DialogTitle>
 
       <DialogContent>
         <Stack spacing={2.5} sx={{ mt: 1 }}>

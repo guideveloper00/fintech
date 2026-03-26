@@ -12,11 +12,12 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TableSortLabel,
   Tooltip,
   Typography,
 } from '@mui/material';
-import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
-import type { TransactionsTableProps } from '../types';
+import { Edit as EditIcon, Delete as DeleteIcon, ContentCopy as CopyIcon } from '@mui/icons-material';
+import type { TransactionsTableProps, SortKey } from '../types';
 
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
@@ -32,26 +33,40 @@ export default function TransactionsTable({
   isLoading,
   totalPages,
   currentPage,
+  sortBy,
+  sortOrder,
   onPageChange,
+  onSort,
   onEdit,
   onDelete,
+  onCopy,
 }: TransactionsTableProps) {
+  function col(key: SortKey, label: string, align?: 'right' | 'center') {
+    return (
+      <TableCell sx={{ fontWeight: 700 }} align={align}>
+        <TableSortLabel
+          active={sortBy === key}
+          direction={sortBy === key ? sortOrder : 'asc'}
+          onClick={() => onSort(key)}
+        >
+          {label}
+        </TableSortLabel>
+      </TableCell>
+    );
+  }
+
   return (
     <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
       <TableContainer>
         <Table size="medium">
           <TableHead>
             <TableRow sx={{ bgcolor: 'action.hover' }}>
-              <TableCell sx={{ fontWeight: 700 }}>Descrição</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Categoria</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Tipo</TableCell>
-              <TableCell sx={{ fontWeight: 700 }} align="right">
-                Valor
-              </TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Data</TableCell>
-              <TableCell sx={{ fontWeight: 700 }} align="center">
-                Ações
-              </TableCell>
+              {col('description', 'Descrição')}
+              {col('category', 'Categoria')}
+              {col('type', 'Tipo')}
+              {col('amount', 'Valor', 'right')}
+              {col('date', 'Data')}
+              <TableCell sx={{ fontWeight: 700 }} align="center">Ações</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -110,6 +125,11 @@ export default function TransactionsTable({
                   </TableCell>
                   <TableCell align="center">
                     <Stack direction="row" justifyContent="center" spacing={0.5}>
+                      <Tooltip title="Copiar como nova transação">
+                        <IconButton size="small" color="default" onClick={() => onCopy(t)}>
+                          <CopyIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                       <Tooltip title="Editar">
                         <IconButton size="small" onClick={() => onEdit(t)}>
                           <EditIcon fontSize="small" />

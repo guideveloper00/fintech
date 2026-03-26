@@ -62,6 +62,15 @@ export type CreateCategoryPayload = { name: string; description?: string };
 
 export type UpdateCategoryPayload = Partial<CreateCategoryPayload>;
 
+export type CategorySortBy = 'name' | 'description' | 'createdAt';
+
+export interface CategoryFilters {
+  page?: number;
+  limit?: number;
+  sortBy?: CategorySortBy;
+  sortOrder?: 'asc' | 'desc';
+}
+
 // ---------------------------------------------------------------------------
 // Transações
 // ---------------------------------------------------------------------------
@@ -91,6 +100,8 @@ export type CreateTransactionPayload = {
 
 export type UpdateTransactionPayload = Partial<CreateTransactionPayload>;
 
+export type TransactionSortBy = 'description' | 'amount' | 'type' | 'date' | 'category';
+
 export interface TransactionFilters {
   type?: TransactionType;
   categoryId?: string;
@@ -98,6 +109,8 @@ export interface TransactionFilters {
   endDate?: string;
   page?: number;
   limit?: number;
+  sortBy?: TransactionSortBy;
+  sortOrder?: 'asc' | 'desc';
 }
 
 // ---------------------------------------------------------------------------

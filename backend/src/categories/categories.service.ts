@@ -9,6 +9,8 @@ import { Category } from './entities/category.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { assertUniqueName } from './helpers/assertUniqueName';
+import { QueryCategoryDto, CategorySortBy, SortOrder } from './dto/query-category.dto';
+import type { PaginatedData } from '../common/types/api-response.types';
 
 @Injectable()
 export class CategoriesService {
@@ -23,11 +25,40 @@ export class CategoriesService {
     return this.repo.save(category);
   }
 
-  findAll(userId: string): Promise<Category[]> {
-    return this.repo.find({
-      where: { userId },
-      order: { createdAt: 'DESC' },
-    });
+  async findAll(userId: string, query: QueryCategoryDto = {}): Promise<PaginatedData<Category>> {
+    const {
+      sortBy = CategorySortBy.CREATED_AT,
+      sortOrder = SortOrder.DESC,
+      page,
+      limit,
+    } = query;
+
+    const effectivePage = page ?? 1;
+    const effectiveLimit = limit ?? 20;
+
+    const columnMap: Record<CategorySortBy, string> = {
+      [CategorySortBy.NAME]: 'c.name',
+      [CategorySortBy.DESCRIPTION]: 'c.description',
+      [CategorySortBy.CREATED_AT]: 'c.createdAt',
+    };
+
+    const orderColumn = columnMap[sortBy] ?? 'c.createdAt';
+
+    const [items, total] = await this.repo
+      .createQueryBuilder('c')
+      .where('c.userId = :userId', { userId })
+      .orderBy(orderColumn, sortOrder.toUpperCase() as 'ASC' | 'DESC')
+      .skip((effectivePage - 1) * effectiveLimit)
+      .take(effectiveLimit)
+      .getManyAndCount();
+
+    return {
+      items,
+      total,
+      page: effectivePage,
+      limit: effectiveLimit,
+      totalPages: Math.ceil(total / effectiveLimit),
+    };
   }
 
   async findOne(id: string, userId: string): Promise<Category> {

@@ -19,14 +19,21 @@ export interface TransactionsFiltersProps {
 
 // ─── TransactionsTable ────────────────────────────────────────────────────────
 
+export type SortKey = 'description' | 'amount' | 'type' | 'date' | 'category';
+export type SortDir = 'asc' | 'desc';
+
 export interface TransactionsTableProps {
   items: Transaction[];
   isLoading: boolean;
   totalPages: number;
   currentPage: number;
+  sortBy: SortKey;
+  sortOrder: SortDir;
   onPageChange: (page: number) => void;
+  onSort: (key: SortKey) => void;
   onEdit: (t: Transaction) => void;
   onDelete: (t: Transaction) => void;
+  onCopy: (t: Transaction) => void;
 }
 
 // ─── ConfirmDeleteDialog ──────────────────────────────────────────────────────

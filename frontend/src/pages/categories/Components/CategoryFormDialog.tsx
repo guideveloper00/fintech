@@ -16,7 +16,6 @@ export default function CategoryFormDialog({
   onSubmit,
   editing,
   isPending,
-  existingNames,
 }: CategoryFormDialogProps) {
   const {
     register,
@@ -50,13 +49,6 @@ export default function CategoryFormDialog({
             required: 'Nome é obrigatório',
             minLength: { value: 2, message: 'Mínimo 2 caracteres' },
             maxLength: { value: 50, message: 'Máximo 50 caracteres' },
-            validate: (value) => {
-              const trimmed = value.trim().toLowerCase();
-              const isDuplicate = existingNames.some(
-                (n) => n.toLowerCase() === trimmed,
-              );
-              return isDuplicate ? 'Já existe uma categoria com esse nome' : true;
-            },
           })}
           error={!!errors.name}
           helperText={errors.name?.message}

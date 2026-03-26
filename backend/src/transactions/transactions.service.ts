@@ -27,13 +27,25 @@ export class TransactionsService {
     userId: string,
     query: QueryTransactionDto,
   ): Promise<PaginatedData<Transaction>> {
-    const { type, categoryId, startDate, endDate, page = 1, limit = 20 } = query;
+    const { type, categoryId, startDate, endDate, page = 1, limit = 20, sortBy = 'date', sortOrder = 'desc' } = query;
+
+    // Mapeamento entre campo recebido do frontend e alias TypeORM
+    const sortColumnMap: Record<string, string> = {
+      description: 't.description',
+      amount: 't.amount',
+      type: 't.type',
+      date: 't.date',
+      category: 'category.name',
+    };
+    const sortColumn = sortColumnMap[sortBy] ?? 't.date';
+    const sortDir = sortOrder.toUpperCase() as 'ASC' | 'DESC';
+
     const qb = this.repo
       .createQueryBuilder('t')
       .leftJoinAndSelect('t.category', 'category')
       .where('t.userId = :userId', { userId })
-      .orderBy('t.date', 'DESC')
-      .addOrderBy('t.createdAt', 'DESC');
+      .orderBy(sortColumn, sortDir)
+      .addOrderBy('t.createdAt', sortDir);
 
     if (type) qb.andWhere('t.type = :type', { type });
     if (categoryId) qb.andWhere('t.categoryId = :categoryId', { categoryId });
