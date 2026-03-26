@@ -4,8 +4,9 @@ import type { ApiErrorResponse } from '@/shared/types';
 
 /**
  * withCredentials: true — faz o browser enviar o HttpOnly cookie
- * automaticamente em toda requisição cross-origin para a API.
- * O token JWT nunca é lido por JavaScript: sai do cookie, entra no cookie.
+ * automaticamente em toda requisição para a API.
+ * Em produção o cookie é same-origin (proxy Vercel → Railway),
+ * então funciona em todos os browsers incluindo Safari/iOS.
  */
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? '/api',
@@ -20,25 +21,14 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       const requestUrl = error.config?.url ?? '';
 
-      // 401 em login/register = credenciais erradas, nunca é expiração de sessão
+      // 401 em login/register = credenciais erradas, não expiração de sessão
       const isAuthAttempt =
         requestUrl.includes('/auth/login') ||
         requestUrl.includes('/auth/register');
 
       if (!isAuthAttempt) {
-        const { loginTimestamp } = useAuthStore.getState();
-        const secondsSinceLogin = loginTimestamp
-          ? (Date.now() - loginTimestamp) / 1000
-          : Infinity;
-
-        // Grace period de 60s após login:
-        //   - Cobre cold start do Railway (~30s)
-        //   - Cobre propagação de cookie cross-origin no Safari ITP / mobile
-        //   - Sessão genuinamente expirada (horas de uso) → secondsSinceLogin >> 60 → desloga ✓
-        if (secondsSinceLogin > 60) {
-          useAuthStore.getState().logout();
-          window.location.href = '/login';
-        }
+        useAuthStore.getState().logout();
+        window.location.href = '/login';
       }
     }
 
